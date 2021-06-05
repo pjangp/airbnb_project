@@ -235,44 +235,48 @@ AirBnB 커버하기
        
           - application.yaml 예시
             ```
-            spring:
-              profiles: docker
-              cloud:
-                gateway:
-                  routes:
-                    - id: payment
-                      uri: http://payment:8080
-                      predicates:
-                        - Path=/payments/** 
-                    - id: room
-                      uri: http://room:8080
-                      predicates:
-                        - Path=/rooms/**, /reviews/**, /check/**
-                    - id: reservation
-                      uri: http://reservation:8080
-                      predicates:
-                        - Path=/reservations/**
-                    - id: message
-                      uri: http://message:8080
-                      predicates:
-                        - Path=/messages/** 
-                    - id: viewpage
-                      uri: http://viewpage:8080
-                      predicates:
-                        - Path= /roomviews/**
-                  globalcors:
-                    corsConfigurations:
-                      '[/**]':
-                        allowedOrigins:
-                          - "*"
-                        allowedMethods:
-                          - "*"
-                        allowedHeaders:
-                          - "*"
-                        allowCredentials: true
+spring:
+  profiles: docker
+  cloud:
+    gateway:
+      routes:
+        - id: payment
+          uri: http://payment:8080
+          predicates:
+            - Path=/payments/** 
+        - id: room
+          uri: http://room:8080
+          predicates:
+            - Path=/rooms/**, /reviews/**, /check/**
+        - id: reservation
+          uri: http://reservation:8080
+          predicates:
+            - Path=/reservations/**
+        - id: message
+          uri: http://message:8080
+          predicates:
+            - Path=/messages/** 
+        - id: viewpage
+          uri: http://viewpage:8080
+          predicates:
+            - Path= /roomviews/**
+        - id: viewpage
+          uri: http://profit:8080
+          predicates:
+            - Path= /profits/**            
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "*"
+            allowedMethods:
+              - "*"
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
 
-            server:
-              port: 8080            
+server:
+  port: 8080         
             ```
 
          
