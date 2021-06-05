@@ -190,10 +190,14 @@ AirBnB 커버하기
 - 결제 완료시 Host 연결 및 예약처리:  reservation 에서 room 마이크로서비스로 예약요청이 전달되는 과정에 있어서 room 마이크로 서비스가 별도의 배포주기를 가지기 때문에 Eventual Consistency 방식으로 트랜잭션 처리함.
 - 나머지 모든 inter-microservice 트랜잭션: 예약상태, 후기처리 등 모든 이벤트에 대해 데이터 일관성의 시점이 크리티컬하지 않은 모든 경우가 대부분이라 판단, Eventual Consistency 를 기본으로 채택함.
 
+![image](https://user-images.githubusercontent.com/80744273/120888196-f28dab80-c631-11eb-869e-57c339c0e81c.png)
+
 
 ## 헥사고날 아키텍처 다이어그램 도출
 
 ![image](https://user-images.githubusercontent.com/80744273/119319091-fc6bf200-bcb4-11eb-9dac-0995c84a82e0.png)
+
+![image](https://user-images.githubusercontent.com/80744273/120888309-8f504900-c632-11eb-8634-0f442c54399f.png)
 
 
     - Chris Richardson, MSA Patterns 참고하여 Inbound adaptor와 Outbound adaptor를 구분함
