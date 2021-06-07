@@ -389,12 +389,8 @@ Airbnb 프로젝트에서는 PolicyHandler에서 처리 시 어떤 건에 대한
 ![image](https://user-images.githubusercontent.com/31723044/119320747-dcd5c900-bcb6-11eb-9c44-fd3781c7c55f.png)
 취소 후 - 결제 상태
 ![image](https://user-images.githubusercontent.com/31723044/119320806-ee1ed580-bcb6-11eb-8ccf-8c81385cc8ba.png)
-
 예약 등록/취소 후 손익계산서 조회
 ![image](https://user-images.githubusercontent.com/80744273/121029887-f103e500-c7e3-11eb-97ce-3fe0e435b0e8.png)
-
-손익계산서 데이타베이스 조회
-![image](https://user-images.githubusercontent.com/80744273/121030322-55bf3f80-c7e4-11eb-941c-6ff45b360037.png)
 
 
 ## DDD 의 적용
