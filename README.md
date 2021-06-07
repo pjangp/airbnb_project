@@ -366,9 +366,12 @@ Airbnb 프로젝트에서는 PolicyHandler에서 처리 시 어떤 건에 대한
 
 아래의 구현 예제를 보면
 
-예약(Reservation)을 하면 동시에 연관된 방(Room), 결제(Payment) 등의 서비스의 상태가 적당하게 변경이 되고,
+예약(Reservation)을 하면 동시에 연관된 방(Room), 결제(Payment)  등의 서비스의 상태가 적당하게 변경이 되고,
 예약건의 취소를 수행하면 다시 연관된 방(Room), 결제(Payment) 등의 서비스의 상태값 등의 데이터가 적당한 상태로 변경되는 것을
 확인할 수 있습니다.
+
+또한 결제 서비스와 손인계산서의 연관 프로세스가 구현되어 있어 결제 승인/취소 이벤트가 발생하면 Profit PolicyHandler를 통해 
+손익에 반영하고 있습니다.
 
 예약등록
 ![image](https://user-images.githubusercontent.com/31723044/119320227-54572880-bcb6-11eb-973b-a9a5cd1f7e21.png)
@@ -386,6 +389,12 @@ Airbnb 프로젝트에서는 PolicyHandler에서 처리 시 어떤 건에 대한
 ![image](https://user-images.githubusercontent.com/31723044/119320747-dcd5c900-bcb6-11eb-9c44-fd3781c7c55f.png)
 취소 후 - 결제 상태
 ![image](https://user-images.githubusercontent.com/31723044/119320806-ee1ed580-bcb6-11eb-8ccf-8c81385cc8ba.png)
+
+예약 등록/취소 후 손익계산서 조회
+![image](https://user-images.githubusercontent.com/80744273/121029887-f103e500-c7e3-11eb-97ce-3fe0e435b0e8.png)
+
+손익계산서 데이타베이스 조회
+![image](https://user-images.githubusercontent.com/80744273/121030322-55bf3f80-c7e4-11eb-941c-6ff45b360037.png)
 
 
 ## DDD 의 적용
