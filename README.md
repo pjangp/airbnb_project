@@ -485,7 +485,7 @@ http GET http://localhost:8088/reservations
 - 룸, 결제 서비스를 호출하기 위하여 Stub과 (FeignClient) 를 이용하여 Service 대행 인터페이스 (Proxy) 를 구현 
 
 ```
-# PaymentService.java
+# PaymentService.java - Reservation 서비스
 
 package airbnb.external;
 
@@ -499,7 +499,7 @@ public interface PaymentService {
 
 }
 
-# RoomService.java
+# RoomService.java - Reservation 서비스
 
 package airbnb.external;
 
@@ -513,6 +513,20 @@ public interface RoomService {
 
 }
 
+# PaymentService.java - Profit 서비스
+
+# PaymentService.java - Profit 서비스
+package airbnb.external;
+
+<import문 생략>
+
+@FeignClient(name="Payment", url="${prop.payment.url}")
+public interface PaymentService {
+
+    @RequestMapping(method= RequestMethod.GET, path="/chk/chkPayId")
+    public boolean chkPayId(@RequestParam("payId") long payId);
+
+}
 
 ```
 
@@ -558,6 +572,34 @@ public interface RoomService {
             reservationCreated.publishAfterCommit();
         }
     }
+
+```
+
+- 손익등록 요청을 받은 직후(@PostPersist) 가능상태 확인 및 결제번호확인을 동기(Sync)로 요청하도록 처리
+```
+# Profit.java (Entity)
+    @PostPersist	
+    public void onPostPersist(){
+        ////////////////////////////
+        // 손익등록시 결제번호 유효성 검증
+        ////////////////////////////
+
+        //airbnb.external.Payment payment = new airbnb.external.Payment();
+        // mappings goes here
+        boolean result = ProfitApplication.applicationContext.getBean(airbnb.external.PaymentService.class)
+            .chkPayId(this.getPayId());
+
+            System.out.println("######## Check Result : " + result);
+
+            if(result) {  
+				// 이벤트 발행 -> ProfitIssued
+				ProfitIssued profitIssued = new ProfitIssued();
+				BeanUtils.copyProperties(this, profitIssued);
+				profitIssued.publishAfterCommit();				
+            }
+
+    }
+
 ```
 
 - 동기식 호출에서는 호출 시간에 따른 타임 커플링이 발생하며, 결제 시스템이 장애가 나면 주문도 못받는다는 것을 확인:
@@ -649,6 +691,49 @@ package airbnb;
 
 ```
 
+
+
+- 손익 시스템에서는 결제 승인 이벤트에 대해서 이를 수신하여 자신의 정책을 처리하도록 PolicyHandler 를 구현한다:
+
+```
+public class PolicyHandler{
+    @Autowired ProfitRepository profitRepository;
+
+
+    @StreamListener(KafkaProcessor.INPUT)
+    public void wheneverPaymentApproved_AddProfit(@Payload PaymentApproved paymentApproved){
+
+        if(paymentApproved.isMe()){
+
+            ///////////////////////////////////////
+            // 결제 완료 시 -> 손익 등록
+            ///////////////////////////////////////
+            long payId = paymentApproved.getPayId(); // 결제된 payId -> 나중에 취소할때 쓰임
+
+            System.out.println("\n\n##### PayId : " + payId + "\n\n");
+
+
+            boolean result = ProfitApplication.applicationContext.getBean(airbnb.external.PaymentService.class)
+            .chkPayId(payId);
+
+            System.out.println("######## Check Result : " + result);
+
+            if(result) {             
+                //updateResvationStatus(rsvId, "reserved", payId); // Status Update
+
+                // Sample Logic //
+                Profit profit = new Profit();
+                profit.setPayId(payId);
+                profit.setFlag("P");
+                profit.setAmount((long)0);
+                profitRepository.save(profit);
+            }
+
+        }
+            
+    }
+
+```
 그 외 메시지 서비스는 예약/결제와 완전히 분리되어있으며, 이벤트 수신에 따라 처리되기 때문에, 메시지 서비스가 유지보수로 인해 잠시 내려간 상태 라도 예약을 받는데 문제가 없다.
 
 ```
