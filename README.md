@@ -1037,48 +1037,58 @@ kubectl delete hpa room -n airbnb
 
 - seige 로 배포작업 직전에 워크로드를 모니터링 함.
 ```
-siege -c100 -t60S -r10 -v --content-type "application/json" 'http://room:8080/rooms POST {"desc": "Beautiful House3"}'
 
-** SIEGE 4.0.4
-** Preparing 1 concurrent users for battle.
-The server is now under siege...
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.03 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.00 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.02 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
+kubectl exec -it siege -c siege -n airbnb -- /bin/bash
+
+siege -c1000 -t60S -r10 -v --content-type "application/json" 'http://profit:8080/profits POST {"pay_id":"1", "amounT":"1000", "flag":"P"}'
+
+Lifting the server siege...
+Transactions:                   8783 hits
+Availability:                 100.00 %
+Elapsed time:                  59.82 secs
+Data transferred:               2.02 MB
+Response time:                  1.70 secs
+Transaction rate:             146.82 trans/sec
+Throughput:                     0.03 MB/sec
+Concurrency:                  249.22
+Successful transactions:        8783
+Failed transactions:               0
+Longest transaction:           13.13
+Shortest transaction:           0.09
 
 ```
 
 - 새버전으로의 배포 시작
 ```
-kubectl set image ...
+kubectl set image deployment profit profit=075134174875.dkr.ecr.ap-northeast-2.amazonaws.com/test01-airbnb-profit:2.0  -n airbnb 
 ```
+![image](https://user-images.githubusercontent.com/80744273/121157546-9ff7fd80-c884-11eb-8714-91c6d22bf9b9.png)
+
+
 
 - seige 의 화면으로 넘어가서 Availability 가 100% 미만으로 떨어졌는지 확인
 
 ```
-siege -c100 -t60S -r10 -v --content-type "application/json" 'http://room:8080/rooms POST {"desc": "Beautiful House3"}'
+siege -c1000 -t60S -r10 -v --content-type "application/json" 'http://profit:8080/profits POST {"pay_id":"1", "amounT":"1000", "flag":"P"}'
 
 
-Transactions:                   7732 hits
-Availability:                  87.32 %
-Elapsed time:                  17.12 secs
-Data transferred:               1.93 MB
-Response time:                  0.18 secs
-Transaction rate:             451.64 trans/sec
-Throughput:                     0.11 MB/sec
-Concurrency:                   81.21
-Successful transactions:        7732
-Failed transactions:            1123
-Longest transaction:            0.94
-Shortest transaction:           0.00
+Transactions:                   3464 hits
+Availability:                  73.05 %
+Elapsed time:                  22.24 secs
+Data transferred:               0.80 MB
+Response time:                  1.27 secs
+Transaction rate:             155.76 trans/sec
+Throughput:                     0.04 MB/sec
+Concurrency:                  198.54
+Successful transactions:        3464
+Failed transactions:            1278
+Longest transaction:            8.55
+Shortest transaction:           0.08
+ 
+
 
 ```
-- 배포기간중 Availability 가 평소 100%에서 87% 대로 떨어지는 것을 확인. 원인은 쿠버네티스가 성급하게 새로 올려진 서비스를 READY 상태로 인식하여 서비스 유입을 진행한 것이기 때문. 이를 막기위해 Readiness Probe 를 설정함
+- 배포기간중 Availability 가 평소 100%에서 73.05% 대로 떨어지는 것을 확인. 원인은 쿠버네티스가 성급하게 새로 올려진 서비스를 READY 상태로 인식하여 서비스 유입을 진행한 것이기 때문. 이를 막기위해 Readiness Probe 를 설정함
 
 ```
 # deployment.yaml 의 readiness probe 의 설정:
