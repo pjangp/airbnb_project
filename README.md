@@ -990,7 +990,9 @@ kubectl autoscale deployment profit -n airbnb --cpu-percent=1 --min=1 --max=10
 ![image](https://user-images.githubusercontent.com/80744273/121123173-b50d6600-c85d-11eb-9d67-31013f53ea85.png)
 
 
-![Autoscale (HPA)(kubectl autoscale 명령어)](https://user-images.githubusercontent.com/38099203/119299474-ec92e480-bc99-11eb-9bc3-8c5246b02783.PNG)
+![image](https://user-images.githubusercontent.com/80744273/121148686-f4977a80-c87c-11eb-91f4-fae80e27c9e8.png)
+![image](https://user-images.githubusercontent.com/80744273/121148754-037e2d00-c87d-11eb-8c5b-9abb6153a82f.png)
+![image](https://user-images.githubusercontent.com/80744273/121148828-155fd000-c87d-11eb-9fcd-061279e910d3.png)
 
 - 부하를 동시사용자 100명, 1분 동안 걸어준다.
 ```
@@ -1000,9 +1002,7 @@ siege -c100 -t60S -v --content-type "application/json" 'http://profit:8080/profi
 ```
 kubectl get deploy profit -w -n airbnb 
 ```
-![image](https://user-images.githubusercontent.com/80744273/121148686-f4977a80-c87c-11eb-91f4-fae80e27c9e8.png)
-![image](https://user-images.githubusercontent.com/80744273/121148754-037e2d00-c87d-11eb-8c5b-9abb6153a82f.png)
-![image](https://user-images.githubusercontent.com/80744273/121148828-155fd000-c87d-11eb-9fcd-061279e910d3.png)
+
 
 
 - 어느정도 시간이 흐른 후 (약 30초) 스케일 아웃이 벌어지는 것을 확인할 수 있다:
