@@ -1387,3 +1387,9 @@ kubectl apply -f deployment.yml
             claimName: aws-efs
 ```
 
+![image](https://user-images.githubusercontent.com/80744273/121148686-f4977a80-c87c-11eb-91f4-fae80e27c9e8.png)
+![image](https://user-images.githubusercontent.com/80744273/121148754-037e2d00-c87d-11eb-8c5b-9abb6153a82f.png)
+![image](https://user-images.githubusercontent.com/80744273/121148828-155fd000-c87d-11eb-9fcd-061279e910d3.png)
+
+
+
