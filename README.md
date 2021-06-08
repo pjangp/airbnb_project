@@ -990,7 +990,7 @@ kubectl autoscale deployment profit -n airbnb --cpu-percent=1 --min=1 --max=10
 ![image](https://user-images.githubusercontent.com/80744273/121123173-b50d6600-c85d-11eb-9d67-31013f53ea85.png)
 
 
-![image](https://user-images.githubusercontent.com/80744273/121148686-f4977a80-c87c-11eb-91f4-fae80e27c9e8.png)
+
 ![image](https://user-images.githubusercontent.com/80744273/121148754-037e2d00-c87d-11eb-8c5b-9abb6153a82f.png)
 ![image](https://user-images.githubusercontent.com/80744273/121148828-155fd000-c87d-11eb-9fcd-061279e910d3.png)
 
@@ -1006,7 +1006,7 @@ kubectl get deploy profit -w -n airbnb
 
 
 - 어느정도 시간이 흐른 후 (약 30초) 스케일 아웃이 벌어지는 것을 확인할 수 있다:
-![Autoscale (HPA)(모니터링)](https://user-images.githubusercontent.com/38099203/119299704-6a56f000-bc9a-11eb-9ba8-55e5978f3739.PNG)
+![image](https://user-images.githubusercontent.com/80744273/121148686-f4977a80-c87c-11eb-91f4-fae80e27c9e8.png)
 
 - siege 의 로그를 보아도 전체적인 성공률이 높아진 것을 확인 할 수 있다. 
 ```
@@ -1094,7 +1094,21 @@ Shortest transaction:           0.08
 # deployment.yaml 의 readiness probe 의 설정:
 ```
 
-![probe설정](https://user-images.githubusercontent.com/38099203/119301424-71333200-bc9d-11eb-9f75-f8c98fce70a3.PNG)
+```
+          readinessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 10
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 10
+          livenessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+```
+
 
 ```
 kubectl apply -f kubernetes/deployment.yml
@@ -1103,18 +1117,18 @@ kubectl apply -f kubernetes/deployment.yml
 - 동일한 시나리오로 재배포 한 후 Availability 확인:
 ```
 Lifting the server siege...
-Transactions:                  27657 hits
+Transactions:                   6692 hits
 Availability:                 100.00 %
-Elapsed time:                  59.41 secs
-Data transferred:               6.91 MB
-Response time:                  0.21 secs
-Transaction rate:             465.53 trans/sec
-Throughput:                     0.12 MB/sec
-Concurrency:                   99.60
-Successful transactions:       27657
+Elapsed time:                  59.60 secs
+Data transferred:               1.54 MB
+Response time:                  2.21 secs
+Transaction rate:             112.28 trans/sec
+Throughput:                     0.03 MB/sec
+Concurrency:                  248.60
+Successful transactions:        6692
 Failed transactions:               0
-Longest transaction:            1.20
-Shortest transaction:           0.00
+Longest transaction:           19.05
+Shortest transaction:           0.04
 
 ```
 
