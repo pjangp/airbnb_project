@@ -224,19 +224,8 @@ AirBnB 커버하기
 
 ## CQRS
 
-숙소(Room) 의 사용가능 여부, 리뷰 및 예약/결재 등 총 Status 에 대하여 고객(Customer)이 조회 할 수 있도록 CQRS 로 구현하였다.
-- room, review, reservation, payment 개별 Aggregate Status 를 통합 조회하여 성능 Issue 를 사전에 예방할 수 있다.
-- 비동기식으로 처리되어 발행된 이벤트 기반 Kafka 를 통해 수신/처리 되어 별도 Table 에 관리한다
-- Table 모델링 (ROOMVIEW)
-  ![image](https://user-images.githubusercontent.com/77129832/119319352-4b198c00-bcb5-11eb-93bc-ff0657feeb9f.png)
-- viewpage MSA ViewHandler 를 통해 구현 ("RoomRegistered" 이벤트 발생 시, Pub/Sub 기반으로 별도 Roomview 테이블에 저장)
-  ![image](https://user-images.githubusercontent.com/77129832/119321162-4d7ce580-bcb7-11eb-9030-29ee6272c40d.png)
-  ![image](https://user-images.githubusercontent.com/31723044/119350185-fccab400-bcd9-11eb-8269-61868de41cc7.png)
-- 실제로 view 페이지를 조회해 보면 모든 room에 대한 전반적인 예약 상태, 결제 상태, 리뷰 건수 등의 정보를 종합적으로 알 수 있다
-  ![image](https://user-images.githubusercontent.com/31723044/119357063-1b34ad80-bce2-11eb-94fb-a587261ab56f.png)
-
-손익조회 추가
-- Table 모델링 (ROOMVIEW)
+손익조회 조회
+- Table 모델링 (profit view)
   ![image](https://user-images.githubusercontent.com/80744273/121295320-c623a900-c929-11eb-96f0-b5b60dbc411d.png)
 -  ProfitIssued 이벤트 수신
 
@@ -399,30 +388,14 @@ Airbnb 프로젝트에서는 PolicyHandler에서 처리 시 어떤 건에 대한
 또한 결제 서비스와 손인계산서의 연관 프로세스가 구현되어 있어 결제 승인/취소 이벤트가 발생하면 Profit PolicyHandler를 통해 
 손익에 반영하고 있습니다.
 
-예약등록
-![image](https://user-images.githubusercontent.com/31723044/119320227-54572880-bcb6-11eb-973b-a9a5cd1f7e21.png)
-예약 후 - 방 상태
-![image](https://user-images.githubusercontent.com/31723044/119320300-689b2580-bcb6-11eb-933e-98be5aadca61.png)
-예약 후 - 예약 상태
-![image](https://user-images.githubusercontent.com/31723044/119320390-810b4000-bcb6-11eb-8c62-48f6765c570a.png)
-예약 후 - 결제 상태
-![image](https://user-images.githubusercontent.com/31723044/119320524-a39d5900-bcb6-11eb-864b-173711eb9e94.png)
-예약 취소
-![image](https://user-images.githubusercontent.com/31723044/119320595-b6b02900-bcb6-11eb-8d8d-0d5c59603c72.png)
-취소 후 - 방 상태
-![image](https://user-images.githubusercontent.com/31723044/119320680-ccbde980-bcb6-11eb-8b7c-66315329aafe.png)
-취소 후 - 예약 상태
-![image](https://user-images.githubusercontent.com/31723044/119320747-dcd5c900-bcb6-11eb-9c44-fd3781c7c55f.png)
-취소 후 - 결제 상태
-![image](https://user-images.githubusercontent.com/31723044/119320806-ee1ed580-bcb6-11eb-8ccf-8c81385cc8ba.png)
+
 예약 등록/취소 후 손익계산서 조회
 ![image](https://user-images.githubusercontent.com/80744273/121029887-f103e500-c7e3-11eb-97ce-3fe0e435b0e8.png)
 
 
 ## DDD 의 적용
 
-- 각 서비스내에 도출된 핵심 Aggregate Root 객체를 Entity 로 선언하였다. (예시는 room 마이크로 서비스). 이때 가능한 현업에서 사용하는 언어 (유비쿼터스 랭귀지)를 그대로 사용하려고 노력했다. 현실에서 발생가는한 이벤트에 의하여 마이크로 서비스들이 상호 작용하기 좋은 모델링으로 구현을 하였다.
-
+- 각 서비스내에 도출된 핵심 Aggregate Root 객체를 Entity 로 선언하였다. (예시는 profit 마이크로 서비스). 
 ```
 package airbnb;
 
@@ -430,16 +403,57 @@ import javax.persistence.*;
 import org.springframework.beans.BeanUtils;
 
 @Entity
-@Table(name="Room_table")
-public class Room {
+@Table(name="Payment_table")
+public class Payment {
 
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    private Long roomId;       // 방ID
-    private String status;     // 방 상태
-    private String desc;       // 방 상세 설명
-    private Long reviewCnt;    // 리뷰 건수
-    private String lastAction; // 최종 작업
+    @GeneratedValue(strategy=GenerationType.AUTO)
+    private Long payId;
+    private Long rsvId;
+    private Long roomId;
+    private String status;
+
+    @PostPersist
+    public void onPostPersist(){
+        ////////////////////////////
+        // 결제 승인 된 경우
+        ////////////////////////////
+        System.out.println("######## Check Result :  ") ;
+
+        // 이벤트 발행 -> PaymentApproved
+        PaymentApproved paymentApproved = new PaymentApproved();
+        BeanUtils.copyProperties(this, paymentApproved);
+        paymentApproved.publishAfterCommit();
+    }
+
+    @PostUpdate
+    public void onPostUpdate(){
+
+        //////////////////////
+        // 결제 취소 된 경우
+        //////////////////////
+
+        // 이벤트 발행 -> PaymentCancelled
+        PaymentCancelled paymentCancelled = new PaymentCancelled();
+        BeanUtils.copyProperties(this, paymentCancelled);
+        paymentCancelled.publishAfterCommit();
+
+    }
+
+    public Long getPayId() {
+        return payId;
+    }
+
+    public void setPayId(Long payId) {
+        this.payId = payId;
+    }
+    public Long getRsvId() {
+        return rsvId;
+    }
+
+    public void setRsvId(Long rsvId) {
+        this.rsvId = rsvId;
+    }
 
     public Long getRoomId() {
         return roomId;
@@ -448,33 +462,13 @@ public class Room {
     public void setRoomId(Long roomId) {
         this.roomId = roomId;
     }
+    
     public String getStatus() {
         return status;
     }
 
     public void setStatus(String status) {
         this.status = status;
-    }
-    public String getDesc() {
-        return desc;
-    }
-
-    public void setDesc(String desc) {
-        this.desc = desc;
-    }
-    public Long getReviewCnt() {
-        return reviewCnt;
-    }
-
-    public void setReviewCnt(Long reviewCnt) {
-        this.reviewCnt = reviewCnt;
-    }
-    public String getLastAction() {
-        return lastAction;
-    }
-
-    public void setLastAction(String lastAction) {
-        this.lastAction = lastAction;
     }
 }
 
@@ -486,60 +480,63 @@ package airbnb;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
-@RepositoryRestResource(collectionResourceRel="rooms", path="rooms")
-public interface RoomRepository extends PagingAndSortingRepository<Room, Long>{
+@RepositoryRestResource(collectionResourceRel="payments", path="payments")
+public interface PaymentRepository extends PagingAndSortingRepository<Payment, Long>{
+
 
 }
+
 ```
 - 적용 후 REST API 의 테스트
 ```
-# room 서비스의 room 등록
-http POST http://localhost:8088/rooms desc="Beautiful House"  
+# profit 서비스의 profit 등록
+http POST http://a83d70f7d97264b6cb55aeb4d5002433-113828935.ap-northeast-2.elb.amazonaws.com:8080/profits pay_id=1 amount=1000 flag=P
+http GET http://a83d70f7d97264b6cb55aeb4d5002433-113828935.ap-northeast-2.elb.amazonaws.com:8080/profits
 
-# reservation 서비스의 예약 요청
-http POST http://localhost:8088/reservations roomId=1 status=reqReserve
-
-# reservation 서비스의 예약 상태 확인
-http GET http://localhost:8088/reservations
 
 ```
 
 ## 동기식 호출(Sync) 과 Fallback 처리
 
-분석 단계에서의 조건 중 하나로 예약 시 숙소(room) 간의 예약 가능 상태 확인 호출은 동기식 일관성을 유지하는 트랜잭션으로 처리하기로 하였다. 호출 프로토콜은 이미 앞서 Rest Repository 에 의해 노출되어있는 REST 서비스를 FeignClient 를 이용하여 호출하도록 한다. 또한 예약(reservation) -> 결제(payment) 서비스도 동기식으로 처리하기로 하였다.
-
-- 룸, 결제 서비스를 호출하기 위하여 Stub과 (FeignClient) 를 이용하여 Service 대행 인터페이스 (Proxy) 를 구현 
+분석 단계에서의 조건 중 하나로 예약 시 숙소(room) 간의 예약 가능 상태 확인 호출은 동기식 일관성을 유지하는 트랜잭션으로 처리하기로 하였다. 호출 프로토콜은 이미 앞서 Rest Repository 에 의해 노출되어있는 REST 서비스를 FeignClient 를 이용하여 호출하도록 한다. 또한 예약(reservation) -> 결제(payment) , 결제(payment) -> 손익 (Profit) 서비스도 동기식으로 처리하기로 하였다.
 
 ```
-# PaymentService.java - Reservation 서비스
+# PaymentController.java - Payment 서비스
 
-package airbnb.external;
+ @RestController
+ public class PaymentController {
 
-<import문 생략>
+    @Autowired
+    PaymentRepository paymentRepository;
 
-@FeignClient(name="Payment", url="${prop.room.url}")
-public interface PaymentService {
+    @RequestMapping(value = "/chk/chkPayId",
+                    method = RequestMethod.GET,
+                    produces = "application/json;charset=UTF-8")
 
-    @RequestMapping(method= RequestMethod.POST, path="/payments")
-    public void approvePayment(@RequestBody Payment payment);
+    public boolean chkPayId(HttpServletRequest request, HttpServletResponse response) throws Exception {
+            System.out.println("##### /chk/chkPayId  called #####");
 
-}
+            // Parameter로 받은 payId 추출
+            long payId = Long.valueOf(request.getParameter("payId"));
+            System.out.println("######################## chkPayId payId : " + payId);
 
-# RoomService.java - Reservation 서비스
+            // payId 데이터 조회
+            Optional<Payment> res = paymentRepository.findById(payId);
+            Payment payment = res.get(); // 조회한 payId 데이터
+            System.out.println("######################## chkPayId payment.payId() : " + payment.getPayId());
 
-package airbnb.external;
+            // payId 가 존재하면 true
+            boolean result = false;
+            if(payment.getPayId() != null) {
+                    result = true;
+            } 
 
-<import문 생략>
+            System.out.println("######################## chkPayId Return : " + result);
+            return result;
+    }    
 
-@FeignClient(name="Room", url="${prop.room.url}")
-public interface RoomService {
+ }
 
-    @RequestMapping(method= RequestMethod.GET, path="/check/chkAndReqReserve")
-    public boolean chkAndReqReserve(@RequestParam("roomId") long roomId);
-
-}
-
-# PaymentService.java - Profit 서비스
 
 # PaymentService.java - Profit 서비스
 package airbnb.external;
@@ -556,51 +553,8 @@ public interface PaymentService {
 
 ```
 
-- 예약 요청을 받은 직후(@PostPersist) 가능상태 확인 및 결제를 동기(Sync)로 요청하도록 처리
-```
-# Reservation.java (Entity)
-
-    @PostPersist
-    public void onPostPersist(){
-
-        ////////////////////////////////
-        // RESERVATION에 INSERT 된 경우 
-        ////////////////////////////////
-
-        ////////////////////////////////////
-        // 예약 요청(reqReserve) 들어온 경우
-        ////////////////////////////////////
-
-        // 해당 ROOM이 Available한 상태인지 체크
-        boolean result = ReservationApplication.applicationContext.getBean(airbnb.external.RoomService.class)
-                        .chkAndReqReserve(this.getRoomId());
-        System.out.println("######## Check Result : " + result);
-
-        if(result) { 
-
-            // 예약 가능한 상태인 경우(Available)
-
-            //////////////////////////////
-            // PAYMENT 결제 진행 (POST방식) - SYNC 호출
-            //////////////////////////////
-            airbnb.external.Payment payment = new airbnb.external.Payment();
-            payment.setRsvId(this.getRsvId());
-            payment.setRoomId(this.getRoomId());
-            payment.setStatus("paid");
-            ReservationApplication.applicationContext.getBean(airbnb.external.PaymentService.class)
-                .approvePayment(payment);
-
-            /////////////////////////////////////
-            // 이벤트 발행 --> ReservationCreated
-            /////////////////////////////////////
-            ReservationCreated reservationCreated = new ReservationCreated();
-            BeanUtils.copyProperties(this, reservationCreated);
-            reservationCreated.publishAfterCommit();
-        }
-    }
 
 ```
-
 - 손익등록 요청을 받은 직후(@PostPersist) 가능상태 확인 및 결제번호확인을 동기(Sync)로 요청하도록 처리
 ```
 # Profit.java (Entity)
@@ -632,12 +586,12 @@ public interface PaymentService {
 
 
 ```
-# 결제 (pay) 서비스를 잠시 내려놓음 (ctrl+c)
+# PROFIT 서비스를 잠시 내려놓음 (ctrl+c)
 
 # 예약 요청
 http POST http://localhost:8088/reservations roomId=1 status=reqReserve   #Fail
 
-# 결제서비스 재기동
+# PROFIT 재기동
 cd payment
 mvn spring-boot:run
 
@@ -652,13 +606,12 @@ http POST http://localhost:8088/reservations roomId=1 status=reqReserve   #Succe
 
 ## 비동기식 호출 / 시간적 디커플링 / 장애격리 / 최종 (Eventual) 일관성 테스트
 
-
-결제가 이루어진 후에 숙소 시스템의 상태가 업데이트 되고, 예약 시스템의 상태가 업데이트 되며, 예약 및 취소 메시지가 전송되는 시스템과의 통신 행위는 비동기식으로 처리한다.
+결제가 이루어진 후에 손익 시스템과의 통신 행위는 비동기식으로 처리한다.
  
 - 이를 위하여 결제가 승인되면 결제가 승인 되었다는 이벤트를 카프카로 송출한다. (Publish)
  
 ```
-# Payment.java
+# Payment.java - 결제 승인완료 이벤트 발생.
 
 package airbnb;
 
@@ -687,41 +640,11 @@ public class Payment {
 }
 ```
 
-- 예약 시스템에서는 결제 승인 이벤트에 대해서 이를 수신하여 자신의 정책을 처리하도록 PolicyHandler 를 구현한다:
-
-```
-# Reservation.java
-
-package airbnb;
-
-    @PostUpdate
-    public void onPostUpdate(){
-    
-        ....
-
-        if(this.getStatus().equals("reserved")) {
-
-            ////////////////////
-            // 예약 확정된 경우
-            ////////////////////
-
-            // 이벤트 발생 --> ReservationConfirmed
-            ReservationConfirmed reservationConfirmed = new ReservationConfirmed();
-            BeanUtils.copyProperties(this, reservationConfirmed);
-            reservationConfirmed.publishAfterCommit();
-        }
-        
-        ....
-        
-    }
-
-```
-
-
-
 - 손익 시스템에서는 결제 승인 이벤트에 대해서 이를 수신하여 자신의 정책을 처리하도록 PolicyHandler 를 구현한다:
 
 ```
+# PROFIT/PolicyHandler.java - 결제 승인완료 이벤트 수신.
+
 public class PolicyHandler{
     @Autowired ProfitRepository profitRepository;
 
@@ -731,30 +654,12 @@ public class PolicyHandler{
 
         if(paymentApproved.isMe()){
 
-            ///////////////////////////////////////
-            // 결제 완료 시 -> 손익 등록
-            ///////////////////////////////////////
-            long payId = paymentApproved.getPayId(); // 결제된 payId -> 나중에 취소할때 쓰임
-
-            System.out.println("\n\n##### PayId : " + payId + "\n\n");
-
-
-            boolean result = ProfitApplication.applicationContext.getBean(airbnb.external.PaymentService.class)
-            .chkPayId(payId);
-
-            System.out.println("######## Check Result : " + result);
-
-            if(result) {             
-                //updateResvationStatus(rsvId, "reserved", payId); // Status Update
-
                 // Sample Logic //
                 Profit profit = new Profit();
                 profit.setPayId(payId);
                 profit.setFlag("P");
                 profit.setAmount((long)0);
                 profitRepository.save(profit);
-            }
-
         }
             
     }
@@ -763,7 +668,7 @@ public class PolicyHandler{
 그 외 메시지 서비스는 예약/결제와 완전히 분리되어있으며, 이벤트 수신에 따라 처리되기 때문에, 메시지 서비스가 유지보수로 인해 잠시 내려간 상태 라도 예약을 받는데 문제가 없다.
 
 ```
-# 메시지 서비스 (message) 를 잠시 내려놓음 (ctrl+c)
+# 손익 서비스 (PROFIT) 를 잠시 내려놓음 (ctrl+c)
 
 # 예약 요청
 http POST http://localhost:8088/reservations roomId=1 status=reqReserve   #Success
@@ -781,20 +686,7 @@ http GET localhost:8088/reservations    #메시지 서비스와 상관없이 예
 각 구현체들은 각자의 source repository 에 구성되었고, 사용한 CI/CD는 buildspec.yml을 이용한 AWS codebuild를 사용하였습니다.
 
 - CodeBuild 프로젝트를 생성하고 AWS_ACCOUNT_ID, KUBE_URL, KUBE_TOKEN 환경 변수 세팅을 한다
-```
-SA 생성
-kubectl apply -f eks-admin-service-account.yml
-```
-![codebuild(sa)](https://user-images.githubusercontent.com/38099203/119293259-ff52ec80-bc8c-11eb-8671-b9a226811762.PNG)
-```
-Role 생성
-kubectl apply -f eks-admin-cluster-role-binding.yml
-```
-![codebuild(role)](https://user-images.githubusercontent.com/38099203/119293300-1abdf780-bc8d-11eb-9b07-ad173237efb1.PNG)
-```
-Token 확인
-kubectl -n kube-system get secret
-kubectl -n kube-system describe secret eks-admin-token-rjpmq
+
 ```
 ![codebuild(token)](https://user-images.githubusercontent.com/38099203/119293511-84d69c80-bc8d-11eb-99c7-e8929e6a41e4.PNG)
 ```
