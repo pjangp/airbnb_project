@@ -195,6 +195,9 @@ AirBnB 커버하기
 ![image](https://user-images.githubusercontent.com/80744273/120888196-f28dab80-c631-11eb-869e-57c339c0e81c.png)
 
 
+![image](https://user-images.githubusercontent.com/80744273/121295627-5235d080-c92a-11eb-9c91-e18a45c44f04.png)
+
+
 ## 헥사고날 아키텍처 다이어그램 도출
 
 - Before
