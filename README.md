@@ -43,8 +43,9 @@ AirBnB 커버하기
 
 비기능적 요구사항
 1. 트랜잭션
-    1. 결제가 되지 않은 예약 건은 성립되지 않아야 한다.  (Sync 호출)
-    2. PayID가 없으면 손익계산서에 기록하지 않는다. (Sync 호출)
+    1. 결제가 되지 않은 예약 건은 성립되지 않아야 한다.  (동기)
+    2. 손익 매뉴얼 등록시 PayID가 없으면 손익계산서에 기록하지 않는다. (동기)
+    3. 결제가 승인되면 손익계산서에 등록한다.(비동기)
 1. 장애격리
     1. 숙소 등록 및 메시지 전송 기능이 수행되지 않더라도 예약은 365일 24시간 받을 수 있어야 한다  Async (event-driven), Eventual Consistency
     1. 예약 시스템이 과중되면 사용자를 잠시동안 받지 않고 잠시 후에 하도록 유도한다  Circuit breaker, fallback
@@ -52,146 +53,7 @@ AirBnB 커버하기
     1. 모든 방에 대한 정보 및 예약 상태 등을 한번에 확인할 수 있어야 한다  (CQRS)
     1. 예약의 상태가 바뀔 때마다 메시지로 알림을 줄 수 있어야 한다  (Event driven)
 
-
-# 체크포인트
-
-- 분석 설계
-
-  - 이벤트스토밍: 
-    - 스티커 색상별 객체의 의미를 제대로 이해하여 헥사고날 아키텍처와의 연계 설계에 적절히 반영하고 있는가?
-    - 각 도메인 이벤트가 의미있는 수준으로 정의되었는가?
-    - 어그리게잇: Command와 Event 들을 ACID 트랜잭션 단위의 Aggregate 로 제대로 묶었는가?
-    - 기능적 요구사항과 비기능적 요구사항을 누락 없이 반영하였는가?    
-
-  - 서브 도메인, 바운디드 컨텍스트 분리
-    - 팀별 KPI 와 관심사, 상이한 배포주기 등에 따른  Sub-domain 이나 Bounded Context 를 적절히 분리하였고 그 분리 기준의 합리성이 충분히 설명되는가?
-      - 적어도 3개 이상 서비스 분리
-    - 폴리글랏 설계: 각 마이크로 서비스들의 구현 목표와 기능 특성에 따른 각자의 기술 Stack 과 저장소 구조를 다양하게 채택하여 설계하였는가?
-    - 서비스 시나리오 중 ACID 트랜잭션이 크리티컬한 Use 케이스에 대하여 무리하게 서비스가 과다하게 조밀히 분리되지 않았는가?
-  - 컨텍스트 매핑 / 이벤트 드리븐 아키텍처 
-    - 업무 중요성과  도메인간 서열을 구분할 수 있는가? (Core, Supporting, General Domain)
-    - Request-Response 방식과 이벤트 드리븐 방식을 구분하여 설계할 수 있는가?
-    - 장애격리: 서포팅 서비스를 제거 하여도 기존 서비스에 영향이 없도록 설계하였는가?
-    - 신규 서비스를 추가 하였을때 기존 서비스의 데이터베이스에 영향이 없도록 설계(열려있는 아키택처)할 수 있는가?
-    - 이벤트와 폴리시를 연결하기 위한 Correlation-key 연결을 제대로 설계하였는가?
-
-  - 헥사고날 아키텍처
-    - 설계 결과에 따른 헥사고날 아키텍처 다이어그램을 제대로 그렸는가?
-    
-- 구현
-  - [DDD] 분석단계에서의 스티커별 색상과 헥사고날 아키텍처에 따라 구현체가 매핑되게 개발되었는가?
-    - Entity Pattern 과 Repository Pattern 을 적용하여 JPA 를 통하여 데이터 접근 어댑터를 개발하였는가
-    - [헥사고날 아키텍처] REST Inbound adaptor 이외에 gRPC 등의 Inbound Adaptor 를 추가함에 있어서 도메인 모델의 손상을 주지 않고 새로운 프로토콜에 기존 구현체를 적응시킬 수 있는가?
-    - 분석단계에서의 유비쿼터스 랭귀지 (업무현장에서 쓰는 용어) 를 사용하여 소스코드가 서술되었는가?
-  - Request-Response 방식의 서비스 중심 아키텍처 구현
-    - 마이크로 서비스간 Request-Response 호출에 있어 대상 서비스를 어떠한 방식으로 찾아서 호출 하였는가? (Service Discovery, REST, FeignClient)
-    - 서킷브레이커를 통하여  장애를 격리시킬 수 있는가?
-  - 이벤트 드리븐 아키텍처의 구현
-    - 카프카를 이용하여 PubSub 으로 하나 이상의 서비스가 연동되었는가?
-    - Correlation-key:  각 이벤트 건 (메시지)가 어떠한 폴리시를 처리할때 어떤 건에 연결된 처리건인지를 구별하기 위한 Correlation-key 연결을 제대로 구현 하였는가?
-    - Message Consumer 마이크로서비스가 장애상황에서 수신받지 못했던 기존 이벤트들을 다시 수신받아 처리하는가?
-    - Scaling-out: Message Consumer 마이크로서비스의 Replica 를 추가했을때 중복없이 이벤트를 수신할 수 있는가
-    - CQRS: Materialized View 를 구현하여, 타 마이크로서비스의 데이터 원본에 접근없이(Composite 서비스나 조인SQL 등 없이) 도 내 서비스의 화면 구성과 잦은 조회가 가능한가?
-
-  - 폴리글랏 플로그래밍
-    - 각 마이크로 서비스들이 하나이상의 각자의 기술 Stack 으로 구성되었는가?
-    - 각 마이크로 서비스들이 각자의 저장소 구조를 자율적으로 채택하고 각자의 저장소 유형 (RDB, NoSQL, File System 등)을 선택하여 구현하였는가?
-  - API 게이트웨이
-    - API GW를 통하여 마이크로 서비스들의 집입점을 통일할 수 있는가?
-    - 게이트웨이와 인증서버(OAuth), JWT 토큰 인증을 통하여 마이크로서비스들을 보호할 수 있는가?
-- 운영
-  - SLA 준수
-    - 셀프힐링: Liveness Probe 를 통하여 어떠한 서비스의 health 상태가 지속적으로 저하됨에 따라 어떠한 임계치에서 pod 가 재생되는 것을 증명할 수 있는가?
-    - 서킷브레이커, 레이트리밋 등을 통한 장애격리와 성능효율을 높힐 수 있는가?
-    - 오토스케일러 (HPA) 를 설정하여 확장적 운영이 가능한가?
-    - 모니터링, 앨럿팅: 
-  - 무정지 운영 CI/CD (10)
-    - Readiness Probe 의 설정과 Rolling update을 통하여 신규 버전이 완전히 서비스를 받을 수 있는 상태일때 신규버전의 서비스로 전환됨을 siege 등으로 증명 
-    - Contract Test :  자동화된 경계 테스트를 통하여 구현 오류나 API 계약위반를 미리 차단 가능한가?
-
-
-# 분석/설계
-
-## AS-IS 조직 (Horizontally-Aligned)
-  ![image](https://user-images.githubusercontent.com/77129832/119316165-96ca3680-bcb1-11eb-9a91-f2b627890bab.png)
-
-## TO-BE 조직 (Vertically-Aligned)  
-  ![image](https://user-images.githubusercontent.com/77129832/119315258-a09f6a00-bcb0-11eb-9940-c2a82f2f7d09.png)
-
-
-## Event Storming 결과
-* MSAEz 로 모델링한 이벤트스토밍 결과:  http://www.msaez.io/#/storming/QtpQtDiH1Je3wad2QxZUJVvnLzO2/share/6f36e16efdf8c872da3855fedf7f3ea9
-
-
-### 이벤트 도출
-![image](https://user-images.githubusercontent.com/15603058/119298548-337fda80-bc98-11eb-9f96-7d583d156fb9.png)
-
-
-### 부적격 이벤트 탈락
-![image](https://user-images.githubusercontent.com/15603058/119298594-4f837c00-bc98-11eb-9f67-ec2e882e1f33.png)
-
-    - 과정중 도출된 잘못된 도메인 이벤트들을 걸러내는 작업을 수행함
-        - 등록시>RoomSearched, 예약시>RoomSelected :  UI 의 이벤트이지, 업무적인 의미의 이벤트가 아니라서 제외
-
-### 액터, 커맨드 부착하여 읽기 좋게
-![image](https://user-images.githubusercontent.com/15603058/119298993-113a8c80-bc99-11eb-9bae-4b911317d810.png)
-
-### 어그리게잇으로 묶기
-![image](https://user-images.githubusercontent.com/15603058/119299589-2663eb00-bc9a-11eb-83b9-de7f3efe7548.png)
-
-    - Room, Reservation, Payment, Review 은 그와 연결된 command 와 event 들에 의하여 트랜잭션이 유지되어야 하는 단위로 그들 끼리 묶어줌
-
-### 바운디드 컨텍스트로 묶기
-
-![image](https://user-images.githubusercontent.com/15603058/119300858-6c21b300-bc9c-11eb-9b3f-c85aff51658f.png)
-
-    - 도메인 서열 분리 
-        - Core Domain:  reservation, room : 없어서는 안될 핵심 서비스이며, 연간 Up-time SLA 수준을 99.999% 목표, 배포주기는 reservation 의 경우 1주일 1회 미만, room 의 경우 1개월 1회 미만
-        - Supporting Domain:   message, viewpage : 경쟁력을 내기위한 서비스이며, SLA 수준은 연간 60% 이상 uptime 목표, 배포주기는 각 팀의 자율이나 표준 스프린트 주기가 1주일 이므로 1주일 1회 이상을 기준으로 함.
-        - General Domain:   payment : 결제서비스로 3rd Party 외부 서비스를 사용하는 것이 경쟁력이 높음 
-
-### 폴리시 부착 (괄호는 수행주체, 폴리시 부착을 둘째단계에서 해놔도 상관 없음. 전체 연계가 초기에 드러남)
-
-![image](https://user-images.githubusercontent.com/15603058/119303664-1b608900-bca1-11eb-8667-7545f32c9fb9.png)
-
-### 폴리시의 이동과 컨텍스트 매핑 (점선은 Pub/Sub, 실선은 Req/Resp)
-
-![image](https://user-images.githubusercontent.com/15603058/119304604-73e45600-bca2-11eb-8f1d-607006919fab.png)
-
-### 완성된 1차 모형
-
-![image](https://user-images.githubusercontent.com/15603058/119305002-0edd3000-bca3-11eb-9cc0-1ba8b17f2432.png)
-
-    - View Model 추가
-
-### 1차 완성본에 대한 기능적/비기능적 요구사항을 커버하는지 검증
-
-![image](https://user-images.githubusercontent.com/15603058/119306321-f110ca80-bca4-11eb-804c-a965220bad61.png)
-
-    - 호스트가 임대할 숙소를 등록/수정/삭제한다.(ok)
-    - 고객이 숙소를 선택하여 예약한다.(ok)
-    - 예약과 동시에 결제가 진행된다.(ok)
-    - 예약이 되면 예약 내역(Message)이 전달된다.(?)
-    - 고객이 예약을 취소할 수 있다.(ok)
-    - 예약 사항이 취소될 경우 취소 내역(Message)이 전달된다.(?)
-    - 숙소에 후기(review)를 남길 수 있다.(ok)
-    - 전체적인 숙소에 대한 정보 및 예약 상태 등을 한 화면에서 확인 할 수 있다.(View-green Sticker 추가로 ok)
-    
-### 모델 수정
-
-![image](https://user-images.githubusercontent.com/15603058/119307481-b740c380-bca6-11eb-9ee6-fda446e299bc.png)
-    
-    - 수정된 모델은 모든 요구사항을 커버함.
-
-### 비기능 요구사항에 대한 검증
-
-![image](https://user-images.githubusercontent.com/15603058/119311800-79df3480-bcac-11eb-9c1b-0382d981f92f.png)
-
-- 마이크로 서비스를 넘나드는 시나리오에 대한 트랜잭션 처리
-- 고객 예약시 결제처리:  결제가 완료되지 않은 예약은 절대 받지 않는다고 결정하여, ACID 트랜잭션 적용. 예약 완료시 사전에 방 상태를 확인하는 것과 결제처리에 대해서는 Request-Response 방식 처리
-- 결제 완료시 Host 연결 및 예약처리:  reservation 에서 room 마이크로서비스로 예약요청이 전달되는 과정에 있어서 room 마이크로 서비스가 별도의 배포주기를 가지기 때문에 Eventual Consistency 방식으로 트랜잭션 처리함.
-- 나머지 모든 inter-microservice 트랜잭션: 예약상태, 후기처리 등 모든 이벤트에 대해 데이터 일관성의 시점이 크리티컬하지 않은 모든 경우가 대부분이라 판단, Eventual Consistency 를 기본으로 채택함.
-
+## 이벤트 스토밍
 ![image](https://user-images.githubusercontent.com/80744273/120888196-f28dab80-c631-11eb-869e-57c339c0e81c.png)
 
 
@@ -390,9 +252,9 @@ AirBnB 커버하기
 
 분석 단계에서의 조건 중 하나로 예약 시 숙소(room) 간의 예약 가능 상태 확인 호출은 동기식 일관성을 유지하는 트랜잭션으로 처리하기로 하였다. 호출 프로토콜은 이미 앞서 Rest Repository 에 의해 노출되어있는 REST 서비스를 FeignClient 를 이용하여 호출하도록 한다. 또한 예약(reservation) -> 결제(payment) , 결제(payment) -> 손익 (Profit) 서비스도 동기식으로 처리하기로 하였다.
 
-```
-# PaymentController.java - Payment 서비스
 
+# PaymentController.java - Payment 서비스
+```
  @RestController
  public class PaymentController {
 
@@ -426,9 +288,10 @@ AirBnB 커버하기
     }    
 
  }
-
+```
 
 # PaymentService.java - Profit 서비스
+```
 package airbnb.external;
 
 <import문 생략>
@@ -476,26 +339,10 @@ public interface PaymentService {
 
 
 ```
-# PROFIT 서비스를 잠시 내려놓음 (ctrl+c)
 
-# 예약 요청
-http POST http://localhost:8088/reservations roomId=1 status=reqReserve   #Fail
 
-# PROFIT 재기동
-cd payment
-mvn spring-boot:run
-
-# 예약 요청
-http POST http://localhost:8088/reservations roomId=1 status=reqReserve   #Success
+## 비동기식
 ```
-
-- 또한 과도한 요청시에 서비스 장애가 도미노 처럼 벌어질 수 있다. (서킷브레이커, 폴백 처리는 운영단계에서 설명한다.)
-
-```
-
-
-## 비동기식 호출 / 시간적 디커플링 / 장애격리 / 최종 (Eventual) 일관성 테스트
-
 결제가 이루어진 후에 손익 시스템과의 통신 행위는 비동기식으로 처리한다.
  
 - 이를 위하여 결제가 승인되면 결제가 승인 되었다는 이벤트를 카프카로 송출한다. (Publish)
@@ -526,14 +373,13 @@ public class Payment {
         BeanUtils.copyProperties(this, paymentApproved);
         paymentApproved.publishAfterCommit();
     }
-    
-    ....
+ 
 }
 ```
 
 - 손익 시스템에서는 결제 승인 이벤트에 대해서 이를 수신하여 자신의 정책을 처리하도록 PolicyHandler 를 구현한다:
 
-```
+
 # PROFIT/PolicyHandler.java - 결제 승인완료 이벤트 수신.
 
 ```
@@ -557,21 +403,24 @@ public class PolicyHandler{
     }
 
 ```
-그 외 메시지 서비스는 예약/결제와 완전히 분리되어있으며, 이벤트 수신에 따라 처리되기 때문에, 메시지 서비스가 유지보수로 인해 잠시 내려간 상태 라도 예약을 받는데 문제가 없다.
+이벤트 수신에 따라 처리되기 때문에, profit 서비스가 유지보수로 인해 잠시 내려간 상태 라도 예약/결제를 받는데 문제가 없다.
 
-```
+
 # 손익 서비스 (PROFIT) 를 잠시 내려놓음 (ctrl+c)
 
 # 예약 요청
+```
 http POST http://localhost:8088/reservations roomId=1 status=reqReserve   #Success
-
+```
 # 예약 상태 확인
+```
 http GET localhost:8088/reservations    #메시지 서비스와 상관없이 예약 상태는 정상 확인
 
 ```
 
 # 운영
 ## Deploy
+```
    - 도커 이미지 생성
    	docker build -t 075134174875.dkr.ecr.ap-northeast-2.amazonaws.com/test01-airbnb-profit:2.0 .
    - ECR 에 도커 이미지 등록
@@ -580,6 +429,7 @@ http GET localhost:8088/reservations    #메시지 서비스와 상관없이 예
    	kubectl apply -f kubernetes/deployment.yml
    - Service 생성 
    	kubectl apply -f kubernetes/service.yaml
+```
 
 ![image](https://user-images.githubusercontent.com/80744273/121303804-75667d00-c936-11eb-8f39-7082a7164af0.png)
 
@@ -590,23 +440,69 @@ http GET localhost:8088/reservations    #메시지 서비스와 상관없이 예
 
 - CodeBuild 프로젝트를 생성하고 AWS_ACCOUNT_ID, KUBE_URL, KUBE_TOKEN 환경 변수 세팅을 한다
 
-```
-![codebuild(token)](https://user-images.githubusercontent.com/38099203/119293511-84d69c80-bc8d-11eb-99c7-e8929e6a41e4.PNG)
-```
+![image](https://user-images.githubusercontent.com/80744273/121305814-0179a400-c939-11eb-96e6-2ff25d388cf2.png)
+
+
 buildspec.yml 파일 
-마이크로 서비스 room의 yml 파일 이용하도록 세팅
 ```
-![codebuild(buildspec)](https://user-images.githubusercontent.com/38099203/119283849-30292680-bc79-11eb-9f86-cbb715e74846.PNG)
+version: 0.2
+
+env:
+  variables:
+    _PROJECT_NAME: "test01-profit"
+    _IMAGE_VERSION: "1.0"
+    _AWS_DEFAULT_REGION: "ap-northeast-2"
+    
+
+phases:
+  install:
+    runtime-versions:
+      java: openjdk8
+      docker: 18
+    commands:
+      - echo install kubectl
+      - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+      - chmod +x ./kubectl
+      - mv ./kubectl /usr/local/bin/kubectl
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - echo $_PROJECT_NAME
+      - echo $AWS_ACCOUNT_ID
+      - echo $AWS_DEFAULT_REGION
+      - echo $CODEBUILD_RESOLVED_SOURCE_VERSION
+      - echo start command
+      - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - mvn package -Dmaven.test.skip=true
+#      - docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$_PROJECT_NAME:$_IMAGE_VERSION  . 
+      - docker build -t 075134174875.dkr.ecr.ap-northeast-2.amazonaws.com/test01-profit:2.0 .
+  post_build:
+    commands:
+      - echo Pushing the Docker image...
+#      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$_PROJECT_NAME:$_IMAGE_VERSION
+      - docker push 075134174875.dkr.ecr.ap-northeast-2.amazonaws.com/test01-profit:2.0
+      - echo connect kubectl
+      - kubectl config set-cluster k8s --server="$KUBE_URL" --insecure-skip-tls-verify=true
+      - kubectl config set-credentials admin --token="$KUBE_TOKEN"
+      - kubectl config set-context default --cluster=k8s --user=admin
+      - kubectl config use-context default
+      - kubectl replace -f kubernetes/deployment.yml --force
+      - kubectl replace -f kubernetes/service.yaml --force
+#      - kubectl replace  -f kubernetes/destination-rule.yml --force
+
+cache:
+  paths:
+    - '/root/.m2/**/*'
+```
 
 - codebuild 실행
-```
 codebuild 프로젝트 및 빌드 이력
-```
-![image](https://user-images.githubusercontent.com/80744273/121034897-5c4fb600-c7e8-11eb-826b-b24d15854e57.png)
 
-- codebuild 빌드 내역 (Message 서비스 세부)
-- 
-![image](https://user-images.githubusercontent.com/80744273/121035009-74273a00-c7e8-11eb-8c98-565570697f1c.png)
+![image](https://user-images.githubusercontent.com/80744273/121308605-34716700-c93c-11eb-9640-f3cd35d7b019.png)
 
 
 
@@ -635,16 +531,12 @@ codebuild 프로젝트 및 빌드 이력
             limits:
               cpu: "2500m"
               memory: "512Mi"
-```	      
-
-- profit 서비스에 대한 replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 50프로를 넘어서면 replica 를 10개까지 늘려준다:
+```	
+- profit 서비스에 대한 replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 1프로를 넘어서면 replica 를 10개까지 늘려준다:
 ```
 kubectl autoscale deployment profit -n airbnb --cpu-percent=1 --min=1 --max=10
 ```
 ![image](https://user-images.githubusercontent.com/80744273/121123173-b50d6600-c85d-11eb-9d67-31013f53ea85.png)
-
-
-
 ![image](https://user-images.githubusercontent.com/80744273/121148754-037e2d00-c87d-11eb-8c5b-9abb6153a82f.png)
 ![image](https://user-images.githubusercontent.com/80744273/121148828-155fd000-c87d-11eb-9fcd-061279e910d3.png)
 
@@ -656,8 +548,6 @@ siege -c100 -t60S -v --content-type "application/json" 'http://profit:8080/profi
 ```
 kubectl get deploy profit -w -n airbnb 
 ```
-
-
 
 - 어느정도 시간이 흐른 후 (약 30초) 스케일 아웃이 벌어지는 것을 확인할 수 있다:
 ![image](https://user-images.githubusercontent.com/80744273/121148686-f4977a80-c87c-11eb-91f4-fae80e27c9e8.png)
@@ -683,13 +573,10 @@ Shortest transaction:           0.01
 
 * 먼저 무정지 재배포가 100% 되는 것인지 확인하기 위해서 Autoscaler 이나 CB 설정을 제거함
 
-```
-kubectl delete destinationrules dr-room -n airbnb
-kubectl label namespace airbnb istio-injection-
-kubectl delete hpa room -n airbnb
-```
+
 
 - seige 로 배포작업 직전에 워크로드를 모니터링 함.
+
 ```
 
 kubectl exec -it siege -c siege -n airbnb -- /bin/bash
