@@ -1152,6 +1152,10 @@ livenessProbe에 'cat /tmp/healthy'으로 검증하도록 함
 컨테이너 실행 후 90초 동인은 정상이나 이후 /tmp/healthy 파일이 삭제되어 livenessProbe에서 실패를 리턴하게 됨
 pod 정상 상태 일때 pod 진입하여 /tmp/healthy 파일 생성해주면 정상 상태 유지됨
 ```
+
+![image](https://user-images.githubusercontent.com/80744273/121279492-98316b00-c90f-11eb-833c-024f05dfc622.png)
+
+
 ![image](https://user-images.githubusercontent.com/80744273/121274587-cd38c000-c905-11eb-8af4-0958e0af80ef.png)
 
 
