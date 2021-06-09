@@ -376,16 +376,7 @@ AirBnB 커버하기
 
 # Correlation
 
-Airbnb 프로젝트에서는 PolicyHandler에서 처리 시 어떤 건에 대한 처리인지를 구별하기 위한 Correlation-key 구현을 
-이벤트 클래스 안의 변수로 전달받아 서비스간 연관된 처리를 정확하게 구현하고 있습니다. 
-
-아래의 구현 예제를 보면
-
-예약(Reservation)을 하면 동시에 연관된 방(Room), 결제(Payment)  등의 서비스의 상태가 적당하게 변경이 되고,
-예약건의 취소를 수행하면 다시 연관된 방(Room), 결제(Payment) 등의 서비스의 상태값 등의 데이터가 적당한 상태로 변경되는 것을
-확인할 수 있습니다.
-
-또한 결제 서비스와 손인계산서의 연관 프로세스가 구현되어 있어 결제 승인/취소 이벤트가 발생하면 Profit PolicyHandler를 통해 
+결제 서비스와 손익계산서의 연관 프로세스가 구현되어 결제 승인/취소 이벤트가 발생하면 Profit PolicyHandler를 통해 
 손익에 반영하고 있습니다.
 
 
@@ -393,110 +384,9 @@ Airbnb 프로젝트에서는 PolicyHandler에서 처리 시 어떤 건에 대한
 ![image](https://user-images.githubusercontent.com/80744273/121029887-f103e500-c7e3-11eb-97ce-3fe0e435b0e8.png)
 
 
-## DDD 의 적용
-
-- 각 서비스내에 도출된 핵심 Aggregate Root 객체를 Entity 로 선언하였다. (예시는 profit 마이크로 서비스). 
-```
-package airbnb;
-
-import javax.persistence.*;
-import org.springframework.beans.BeanUtils;
-
-@Entity
-@Table(name="Payment_table")
-public class Payment {
-
-    @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
-    private Long payId;
-    private Long rsvId;
-    private Long roomId;
-    private String status;
-
-    @PostPersist
-    public void onPostPersist(){
-        ////////////////////////////
-        // 결제 승인 된 경우
-        ////////////////////////////
-        System.out.println("######## Check Result :  ") ;
-
-        // 이벤트 발행 -> PaymentApproved
-        PaymentApproved paymentApproved = new PaymentApproved();
-        BeanUtils.copyProperties(this, paymentApproved);
-        paymentApproved.publishAfterCommit();
-    }
-
-    @PostUpdate
-    public void onPostUpdate(){
-
-        //////////////////////
-        // 결제 취소 된 경우
-        //////////////////////
-
-        // 이벤트 발행 -> PaymentCancelled
-        PaymentCancelled paymentCancelled = new PaymentCancelled();
-        BeanUtils.copyProperties(this, paymentCancelled);
-        paymentCancelled.publishAfterCommit();
-
-    }
-
-    public Long getPayId() {
-        return payId;
-    }
-
-    public void setPayId(Long payId) {
-        this.payId = payId;
-    }
-    public Long getRsvId() {
-        return rsvId;
-    }
-
-    public void setRsvId(Long rsvId) {
-        this.rsvId = rsvId;
-    }
-
-    public Long getRoomId() {
-        return roomId;
-    }
-
-    public void setRoomId(Long roomId) {
-        this.roomId = roomId;
-    }
-    
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-}
-
-```
-- Entity Pattern 과 Repository Pattern 을 적용하여 JPA 를 통하여 다양한 데이터소스 유형 (RDB or NoSQL) 에 대한 별도의 처리가 없도록 데이터 접근 어댑터를 자동 생성하기 위하여 Spring Data REST 의 RestRepository 를 적용하였다
-```
-package airbnb;
-
-import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.data.rest.core.annotation.RepositoryRestResource;
-
-@RepositoryRestResource(collectionResourceRel="payments", path="payments")
-public interface PaymentRepository extends PagingAndSortingRepository<Payment, Long>{
 
 
-}
-
-```
-- 적용 후 REST API 의 테스트
-```
-# profit 서비스의 profit 등록
-http POST http://a83d70f7d97264b6cb55aeb4d5002433-113828935.ap-northeast-2.elb.amazonaws.com:8080/profits pay_id=1 amount=1000 flag=P
-http GET http://a83d70f7d97264b6cb55aeb4d5002433-113828935.ap-northeast-2.elb.amazonaws.com:8080/profits
-
-
-```
-
-## 동기식 호출(Sync) 과 Fallback 처리
+## 동기식 호출(Sync)
 
 분석 단계에서의 조건 중 하나로 예약 시 숙소(room) 간의 예약 가능 상태 확인 호출은 동기식 일관성을 유지하는 트랜잭션으로 처리하기로 하였다. 호출 프로토콜은 이미 앞서 Rest Repository 에 의해 노출되어있는 REST 서비스를 FeignClient 를 이용하여 호출하도록 한다. 또한 예약(reservation) -> 결제(payment) , 결제(payment) -> 손익 (Profit) 서비스도 동기식으로 처리하기로 하였다.
 
@@ -601,7 +491,7 @@ http POST http://localhost:8088/reservations roomId=1 status=reqReserve   #Succe
 
 - 또한 과도한 요청시에 서비스 장애가 도미노 처럼 벌어질 수 있다. (서킷브레이커, 폴백 처리는 운영단계에서 설명한다.)
 
-
+```
 
 
 ## 비동기식 호출 / 시간적 디커플링 / 장애격리 / 최종 (Eventual) 일관성 테스트
@@ -613,6 +503,7 @@ http POST http://localhost:8088/reservations roomId=1 status=reqReserve   #Succe
 ```
 # Payment.java - 결제 승인완료 이벤트 발생.
 
+```
 package airbnb;
 
 import javax.persistence.*;
@@ -645,6 +536,7 @@ public class Payment {
 ```
 # PROFIT/PolicyHandler.java - 결제 승인완료 이벤트 수신.
 
+```
 public class PolicyHandler{
     @Autowired ProfitRepository profitRepository;
 
@@ -679,6 +571,17 @@ http GET localhost:8088/reservations    #메시지 서비스와 상관없이 예
 ```
 
 # 운영
+## Deploy
+   - 도커 이미지 생성
+   	docker build -t 075134174875.dkr.ecr.ap-northeast-2.amazonaws.com/test01-airbnb-profit:2.0 .
+   - ECR 에 도커 이미지 등록
+   	docker push 075134174875.dkr.ecr.ap-northeast-2.amazonaws.com/test01-airbnb-profit:2.0
+   - Deployment 생성
+   	kubectl apply -f kubernetes/deployment.yml
+   - Service 생성 
+   	kubectl apply -f kubernetes/service.yaml
+
+![image](https://user-images.githubusercontent.com/80744273/121303804-75667d00-c936-11eb-8f39-7082a7164af0.png)
 
 
 ## CI/CD 설정
@@ -707,173 +610,6 @@ codebuild 프로젝트 및 빌드 이력
 
 
 
-
-
-## 동기식 호출 / 서킷 브레이킹 / 장애격리
-
-* 서킷 브레이킹 프레임워크의 선택: istio 사용하여 구현함
-
-시나리오는 예약(reservation)--> 룸(room) 시의 연결을 RESTful Request/Response 로 연동하여 구현이 되어있고, 예약 요청이 과도할 경우 CB 를 통하여 장애격리.
-
-- DestinationRule 를 생성하여 circuit break 가 발생할 수 있도록 설정
-최소 connection pool 설정
-```
-# destination-rule.yml
-apiVersion: networking.istio.io/v1alpha3
-kind: DestinationRule
-metadata:
-  name: dr-room
-  namespace: airbnb
-spec:
-  host: room
-  trafficPolicy:
-    connectionPool:
-      http:
-        http1MaxPendingRequests: 1
-        maxRequestsPerConnection: 1
-#    outlierDetection:
-#      interval: 1s
-#      consecutiveErrors: 1
-#      baseEjectionTime: 10s
-#      maxEjectionPercent: 100
-```
-
-* istio-injection 활성화 및 room pod container 확인
-
-```
-kubectl get ns -L istio-injection
-kubectl label namespace airbnb istio-injection=enabled 
-```
-
-![Circuit Breaker(istio-enjection)](https://user-images.githubusercontent.com/38099203/119295450-d6812600-bc91-11eb-8aad-46eeac968a41.PNG)
-
-![Circuit Breaker(pod)](https://user-images.githubusercontent.com/38099203/119295568-0cbea580-bc92-11eb-9d2b-8580f3576b47.PNG)
-
-
-* 부하테스터 siege 툴을 통한 서킷 브레이커 동작 확인:
-
-siege 실행
-
-```
-kubectl run siege --image=apexacme/siege-nginx -n airbnb
-kubectl exec -it siege -c siege -n airbnb -- /bin/bash
-```
-
-
-- 동시사용자 1로 부하 생성 시 모두 정상
-```
-siege -c1 -t10S -v --content-type "application/json" 'http://room:8080/rooms POST {"desc": "Beautiful House3"}'
-
-** SIEGE 4.0.4
-** Preparing 1 concurrent users for battle.
-The server is now under siege...
-HTTP/1.1 201     0.49 secs:     254 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.05 secs:     254 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.02 secs:     254 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.03 secs:     254 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.02 secs:     254 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.02 secs:     254 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.03 secs:     254 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.03 secs:     254 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.03 secs:     254 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.03 secs:     256 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.03 secs:     256 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.02 secs:     256 bytes ==> POST http://room:8080/rooms
-```
-
-- 동시사용자 2로 부하 생성 시 503 에러 168개 발생
-```
-siege -c2 -t10S -v --content-type "application/json" 'http://room:8080/rooms POST {"desc": "Beautiful House3"}'
-
-** SIEGE 4.0.4
-** Preparing 2 concurrent users for battle.
-The server is now under siege...
-HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 503     0.10 secs:      81 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.04 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.05 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.22 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.08 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.07 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 503     0.01 secs:      81 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.03 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 503     0.01 secs:      81 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.02 secs:     258 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 503     0.00 secs:      81 bytes ==> POST http://room:8080/rooms
-
-Lifting the server siege...
-Transactions:                   1904 hits
-Availability:                  91.89 %
-Elapsed time:                   9.89 secs
-Data transferred:               0.48 MB
-Response time:                  0.01 secs
-Transaction rate:             192.52 trans/sec
-Throughput:                     0.05 MB/sec
-Concurrency:                    1.98
-Successful transactions:        1904
-Failed transactions:             168
-Longest transaction:            0.03
-Shortest transaction:           0.00
-```
-
-- kiali 화면에 서킷 브레이크 확인
-
-![Circuit Breaker(kiali)](https://user-images.githubusercontent.com/38099203/119298194-7f7e4f80-bc97-11eb-8447-678eece29e5c.PNG)
-
-
-- 다시 최소 Connection pool로 부하 다시 정상 확인
-
-```
-** SIEGE 4.0.4
-** Preparing 1 concurrent users for battle.
-The server is now under siege...
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.03 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.00 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.02 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.00 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.00 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
-HTTP/1.1 201     0.01 secs:     260 bytes ==> POST http://room:8080/rooms
-
-:
-:
-
-Lifting the server siege...
-Transactions:                   1139 hits
-Availability:                 100.00 %
-Elapsed time:                   9.19 secs
-Data transferred:               0.28 MB
-Response time:                  0.01 secs
-Transaction rate:             123.94 trans/sec
-Throughput:                     0.03 MB/sec
-Concurrency:                    0.98
-Successful transactions:        1139
-Failed transactions:               0
-Longest transaction:            0.04
-Shortest transaction:           0.00
-
-```
-
-- 운영시스템은 죽지 않고 지속적으로 CB 에 의하여 적절히 회로가 열림과 닫힘이 벌어지면서 자원을 보호하고 있음을 보여줌.
-  virtualhost 설정과 동적 Scale out (replica의 자동적 추가,HPA) 을 통하여 시스템을 확장 해주는 후속처리가 필요.
 
 
 ### 오토스케일 아웃
