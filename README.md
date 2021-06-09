@@ -237,8 +237,27 @@ AirBnB 커버하기
 
 손익조회 추가
 - Table 모델링 (ROOMVIEW)
-![image](https://user-images.githubusercontent.com/80744273/121295320-c623a900-c929-11eb-96f0-b5b60dbc411d.png)
+  ![image](https://user-images.githubusercontent.com/80744273/121295320-c623a900-c929-11eb-96f0-b5b60dbc411d.png)
+-  ProfitIssued 이벤트 수신
 
+```
+    @StreamListener(KafkaProcessor.INPUT)
+    public void wheneverPaymentApproved_AddProfit(@Payload ProfitIssued profitIssued){
+
+        if(profitIssued.isMe()){
+
+                // Sample Logic //
+                ProfitView profitView = new ProfitView();
+                profitView.setPayId(profitIssued.getPayId());
+                profitView.setFlag(profitIssued.getFlag());
+                profitView.setAmount(profitIssued.getAmount());
+                profitViewRepository.save(profitView);
+
+
+        }
+            
+    }
+```
 
 
 ## API 게이트웨이
