@@ -533,12 +533,10 @@ codebuild 프로젝트 및 빌드 이력
               memory: "512Mi"
 ```	
 - profit 서비스에 대한 replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 1프로를 넘어서면 replica 를 10개까지 늘려준다:
+
 ```
 kubectl autoscale deployment profit -n airbnb --cpu-percent=1 --min=1 --max=10
 ```
-![image](https://user-images.githubusercontent.com/80744273/121123173-b50d6600-c85d-11eb-9d67-31013f53ea85.png)
-![image](https://user-images.githubusercontent.com/80744273/121148754-037e2d00-c87d-11eb-8c5b-9abb6153a82f.png)
-![image](https://user-images.githubusercontent.com/80744273/121148828-155fd000-c87d-11eb-9fcd-061279e910d3.png)
 
 - 부하를 동시사용자 100명, 1분 동안 걸어준다.
 ```
@@ -550,6 +548,7 @@ kubectl get deploy profit -w -n airbnb
 ```
 
 - 어느정도 시간이 흐른 후 (약 30초) 스케일 아웃이 벌어지는 것을 확인할 수 있다:
+```
 ![image](https://user-images.githubusercontent.com/80744273/121148686-f4977a80-c87c-11eb-91f4-fae80e27c9e8.png)
 
 - siege 의 로그를 보아도 전체적인 성공률이 높아진 것을 확인 할 수 있다. 
@@ -568,7 +567,7 @@ Failed transactions:               0
 Longest transaction:            2.55
 Shortest transaction:           0.01
 ```
-
+```
 ## 무정지 재배포
 
 * 먼저 무정지 재배포가 100% 되는 것인지 확인하기 위해서 Autoscaler 이나 CB 설정을 제거함
