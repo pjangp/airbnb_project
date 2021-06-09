@@ -1425,7 +1425,7 @@ metadata:
 data:
   # 속성과 비슷한 키; 각 키는 간단한 값으로 매핑됨
   max_reservation_per_person: "10"
-  db-host: database-1.ctxnhbpzdwqx.ap-northeast-2.rds.amazonaws.com
+  db-host: xxxxxxxxxxxxxxxxx.ap-northeast-2.rds.amazonaws.com
   ui_properties_file_name: "user-interface.properties"
 ```
 
