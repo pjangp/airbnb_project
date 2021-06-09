@@ -1168,6 +1168,8 @@ EFS 생성 시 클러스터의 VPC를 선택해야함
 ![클러스터의 VPC를 선택해야함]![image](https://user-images.githubusercontent.com/80744273/121289114-704a0380-c91f-11eb-939a-7fe45d87160b.png)
 ![EFS생성]![image](https://user-images.githubusercontent.com/80744273/121289010-44c71900-c91f-11eb-8eee-326ed6fee2d7.png)
 
+![image](https://user-images.githubusercontent.com/80744273/121292414-e0a75380-c924-11eb-84a7-329bd6856d47.png)
+
 
 
 
@@ -1345,11 +1347,12 @@ spec:
   
 kubectl get pvc aws-efs -n airbnb
 NAME      STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-aws-efs   Bound    pvc-dcc62e95-cea7-47b9-b06d-192eddc067d2   6Ki        RWX            aws-efs        12s
+aws-efs   Bound    pvc-78729e12-18ba-483d-9bca-649886984670   6Ki        RWX            aws-efs        15s
+
 
 ```
 
-6. profit pod 적용
+6. profit/payment pod 적용
 ```
 kubectl apply -f deployment.yml
 ```
@@ -1358,21 +1361,19 @@ kubectl apply -f deployment.yml
 
 7. A pod에서 마운트된 경로에 파일을 생성하고 B pod에서 파일을 확인함
 ```
-NAME                              READY   STATUS    RESTARTS   AGE
-efs-provisioner-f4f7b5d64-lt7rz   1/1     Running   0          14m
-room-5df66d6674-n6b7n             1/1     Running   0          109s
-room-5df66d6674-pl25l             1/1     Running   0          109s
-siege                             1/1     Running   0          2d1h
+![image](https://user-images.githubusercontent.com/80744273/121293819-3a108200-c927-11eb-8fc5-eaf659199ca7.png)
 
 
-kubectl exec -it pod/room-5df66d6674-n6b7n room -n airbnb -- /bin/sh
+kubectl exec -it pod/profit-fb8bc5484-6pzlz profit -n airbnb -- /bin/sh
 / # cd /mnt/aws
-/mnt/aws # touch intensive_course_work
-```
-![a pod에서 파일생성](https://user-images.githubusercontent.com/38099203/119372712-9736f180-bcf2-11eb-8e57-1d6e3f4273a5.PNG)
+/mnt/aws # touch common_code
+
 
 ```
-kubectl exec -it pod/room-5df66d6674-pl25l room -n airbnb -- /bin/sh
+![profit pod에서 파일확인](https://user-images.githubusercontent.com/80744273/121293721-0d5c6a80-c927-11eb-82ce-e6cec09f1a1c.png)
+
+```
+kubectl exec -it pod/payment-6d9f8858fd-4s8v5 payment -n airbnb -- /bin/sh
 / # cd /mnt/aws
 /mnt/aws # ls -al
 total 8
@@ -1380,7 +1381,7 @@ drwxrws--x    2 root     2000          6144 May 24 15:44 .
 drwxr-xr-x    1 root     root            17 May 24 15:42 ..
 -rw-r--r--    1 root     2000             0 May 24 15:44 intensive_course_work
 ```
-![b pod에서 파일생성 확인](https://user-images.githubusercontent.com/38099203/119373196-204e2880-bcf3-11eb-88f0-a1e91a89088a.PNG)
+![payment pod에서 파일확인](https://user-images.githubusercontent.com/80744273/121293748-19e0c300-c927-11eb-8f92-564925e6a885.png)
 
 
 - Config Map
@@ -1396,8 +1397,9 @@ metadata:
   name: airbnb-config
   namespace: airbnb
 data:
-  # 단일 key-value
+  # 속성과 비슷한 키; 각 키는 간단한 값으로 매핑됨
   max_reservation_per_person: "10"
+  db-host: database-1.ctxnhbpzdwqx.ap-northeast-2.rds.amazonaws.com
   ui_properties_file_name: "user-interface.properties"
 ```
 
@@ -1420,6 +1422,11 @@ kubectl apply -f deployment.yml
                 configMapKeyRef:
                   name: airbnb-config
                   key: ui_properties_file_name
+            - name: DB-HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: airbnb-config
+                  key: db-host    		  
           volumeMounts:
           - mountPath: "/mnt/aws"
             name: volume
@@ -1427,6 +1434,13 @@ kubectl apply -f deployment.yml
         - name: volume
           persistentVolumeClaim:
             claimName: aws-efs
+```
+profit 서비스의 application.yml 변경
+```
+  datasource:
+    # jndi-name: jdbc/sqlserver/skupv
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    url: jdbc:sqlserver://${DB-HOST}:1433;DatabaseName=eco
 ```
 
 
