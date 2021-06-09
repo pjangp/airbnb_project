@@ -1152,16 +1152,10 @@ livenessProbe에 'cat /tmp/healthy'으로 검증하도록 함
 컨테이너 실행 후 90초 동인은 정상이나 이후 /tmp/healthy 파일이 삭제되어 livenessProbe에서 실패를 리턴하게 됨
 pod 정상 상태 일때 pod 진입하여 /tmp/healthy 파일 생성해주면 정상 상태 유지됨
 ```
+kubectl exec -ti pod/profit-6ff99989bc-8bjhg -n airbnb -- touch /tmp/healthy
 
 ![image](https://user-images.githubusercontent.com/80744273/121279492-98316b00-c90f-11eb-833c-024f05dfc622.png)
-
-
-![image](https://user-images.githubusercontent.com/80744273/121274587-cd38c000-c905-11eb-8af4-0958e0af80ef.png)
-
-
-
-![get pod tmp healthy](https://user-images.githubusercontent.com/38099203/119318781-a9923a80-bcb4-11eb-9783-65051ec0d6e8.PNG)
-![touch tmp healthy](https://user-images.githubusercontent.com/38099203/119319050-f118c680-bcb4-11eb-8bca-aa135c1e067e.PNG)
+![image](https://user-images.githubusercontent.com/80744273/121279598-c6af4600-c90f-11eb-944d-0377c2e8c65f.png)
 
 # Config Map/ Persistence Volume
 - Persistence Volume
@@ -1350,7 +1344,7 @@ NAME      STATUS   VOLUME                                     CAPACITY   ACCESS 
 aws-efs   Bound    pvc-43f6fe12-b9f3-400c-ba20-b357c1639f00   6Ki        RWX            aws-efs        4m44s
 ```
 
-6. room pod 적용
+6. profit pod 적용
 ```
 kubectl apply -f deployment.yml
 ```
