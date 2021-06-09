@@ -1299,7 +1299,7 @@ spec:
 
 kubectl get Deployment efs-provisioner -n airbnb
 NAME              READY   UP-TO-DATE   AVAILABLE   AGE
-efs-provisioner   1/1     1            1           11m
+efs-provisioner   1/1     1            1           16s
 
 ```
 
@@ -1317,8 +1317,9 @@ provisioner: my-aws.com/aws-efs
 
 
 kubectl get sc aws-efs -n airbnb
-NAME            PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
-aws-efs         my-aws.com/aws-efs      Delete          Immediate              false                  4s
+NAME      PROVISIONER          RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+aws-efs   my-aws.com/aws-efs   Delete          Immediate           false                  14d
+
 ```
 
 5. PVC(PersistentVolumeClaim) 생성
@@ -1344,7 +1345,8 @@ spec:
   
 kubectl get pvc aws-efs -n airbnb
 NAME      STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-aws-efs   Bound    pvc-43f6fe12-b9f3-400c-ba20-b357c1639f00   6Ki        RWX            aws-efs        4m44s
+aws-efs   Bound    pvc-dcc62e95-cea7-47b9-b06d-192eddc067d2   6Ki        RWX            aws-efs        12s
+
 ```
 
 6. profit pod 적용
