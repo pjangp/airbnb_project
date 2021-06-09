@@ -548,8 +548,9 @@ kubectl get deploy profit -w -n airbnb
 ```
 
 - 어느정도 시간이 흐른 후 (약 30초) 스케일 아웃이 벌어지는 것을 확인할 수 있다:
-```
+
 ![image](https://user-images.githubusercontent.com/80744273/121148686-f4977a80-c87c-11eb-91f4-fae80e27c9e8.png)
+
 
 - siege 의 로그를 보아도 전체적인 성공률이 높아진 것을 확인 할 수 있다. 
 ```
@@ -567,43 +568,15 @@ Failed transactions:               0
 Longest transaction:            2.55
 Shortest transaction:           0.01
 ```
-```
+
 ## 무정지 재배포
-
-* 먼저 무정지 재배포가 100% 되는 것인지 확인하기 위해서 Autoscaler 이나 CB 설정을 제거함
-
-
-
-- seige 로 배포작업 직전에 워크로드를 모니터링 함.
-
-```
-
-kubectl exec -it siege -c siege -n airbnb -- /bin/bash
-
-siege -c1000 -t60S -r10 -v --content-type "application/json" 'http://profit:8080/profits POST {"pay_id":"1", "amounT":"1000", "flag":"P"}'
-
-Lifting the server siege...
-Transactions:                   8783 hits
-Availability:                 100.00 %
-Elapsed time:                  59.82 secs
-Data transferred:               2.02 MB
-Response time:                  1.70 secs
-Transaction rate:             146.82 trans/sec
-Throughput:                     0.03 MB/sec
-Concurrency:                  249.22
-Successful transactions:        8783
-Failed transactions:               0
-Longest transaction:           13.13
-Shortest transaction:           0.09
-
-```
 
 - 새버전으로의 배포 시작
 ```
 kubectl set image deployment profit profit=075134174875.dkr.ecr.ap-northeast-2.amazonaws.com/test01-airbnb-profit:2.0  -n airbnb 
 ```
-![image](https://user-images.githubusercontent.com/80744273/121157546-9ff7fd80-c884-11eb-8714-91c6d22bf9b9.png)
 
+![image](https://user-images.githubusercontent.com/80744273/121157546-9ff7fd80-c884-11eb-8714-91c6d22bf9b9.png)
 
 
 - seige 의 화면으로 넘어가서 Availability 가 100% 미만으로 떨어졌는지 확인
@@ -628,7 +601,7 @@ Shortest transaction:           0.08
 
 
 ```
-- 배포기간중 Availability 가 평소 100%에서 73.05% 대로 떨어지는 것을 확인. 원인은 쿠버네티스가 성급하게 새로 올려진 서비스를 READY 상태로 인식하여 서비스 유입을 진행한 것이기 때문. 이를 막기위해 Readiness Probe 를 설정함
+- 배포기간중 Availability 가 평소 100%에서 73.05% 대로 떨어지는 것을 확인. 이를 막기위해 Readiness Probe 를 설정함
 
 ```
 # deployment.yaml 의 readiness probe 의 설정:
@@ -676,7 +649,7 @@ Shortest transaction:           0.04
 
 
 # Self-healing (Liveness Probe)
-- room deployment.yml 파일 수정 
+- profit deployment.yml 파일 수정 
 ```
 콘테이너 실행 후 /tmp/healthy 파일을 만들고 
 90초 후 삭제
