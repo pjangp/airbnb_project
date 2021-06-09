@@ -1164,9 +1164,12 @@ kubectl exec -ti pod/profit-6ff99989bc-8bjhg -n airbnb -- touch /tmp/healthy
 ```
 EFS 생성 시 클러스터의 VPC를 선택해야함
 ```
-![클러스터의 VPC를 선택해야함](https://user-images.githubusercontent.com/38099203/119364089-85048580-bce9-11eb-8001-1c20a93b8e36.PNG)
 
-![EFS생성](https://user-images.githubusercontent.com/38099203/119343415-60041880-bcd1-11eb-9c25-1695c858f6aa.PNG)
+![클러스터의 VPC를 선택해야함]![image](https://user-images.githubusercontent.com/80744273/121289114-704a0380-c91f-11eb-939a-7fe45d87160b.png)
+![EFS생성]![image](https://user-images.githubusercontent.com/80744273/121289010-44c71900-c91f-11eb-8eee-326ed6fee2d7.png)
+
+
+
 
 2. EFS 계정 생성 및 ROLE 바인딩
 ```
