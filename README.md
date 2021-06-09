@@ -1142,8 +1142,9 @@ Shortest transaction:           0.04
 90초 후 삭제
 livenessProbe에 'cat /tmp/healthy'으로 검증하도록 함
 ```
-![image](https://user-images.githubusercontent.com/80744273/121163690-f7e53300-c889-11eb-989b-997e673b713f.png)
 
+
+![image](https://user-images.githubusercontent.com/80744273/121273844-2142a500-c904-11eb-8e9f-03b74fcbb510.png)
 
 
 - kubectl describe pod profit -n airbnb 실행으로 확인
@@ -1151,6 +1152,9 @@ livenessProbe에 'cat /tmp/healthy'으로 검증하도록 함
 컨테이너 실행 후 90초 동인은 정상이나 이후 /tmp/healthy 파일이 삭제되어 livenessProbe에서 실패를 리턴하게 됨
 pod 정상 상태 일때 pod 진입하여 /tmp/healthy 파일 생성해주면 정상 상태 유지됨
 ```
+![image](https://user-images.githubusercontent.com/80744273/121274587-cd38c000-c905-11eb-8af4-0958e0af80ef.png)
+
+
 
 ![get pod tmp healthy](https://user-images.githubusercontent.com/38099203/119318781-a9923a80-bcb4-11eb-9783-65051ec0d6e8.PNG)
 ![touch tmp healthy](https://user-images.githubusercontent.com/38099203/119319050-f118c680-bcb4-11eb-8bca-aa135c1e067e.PNG)
