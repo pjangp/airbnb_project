@@ -37,33 +37,33 @@
       * https://code.visualstudio.com/download
     - JDK 다운로드 및 extension pack 설치(참고용)
      
-      ```
-         1. vscode 실행
-         2. ctrl + shift + p  클릭 후  configure java runtime 실행 
-         3. jdk11을 다운로드 한다.
-         4. 다운로드한 압축파일을 해제 한 후 dev-tool (참고용)  폴더 아래로 이동 시킨다.         
-         * 참고사이트 : https://allonsyit.tistory.com/10
-      ```
+    ```
+     1. vscode 실행
+     2. ctrl + shift + p  클릭 후  configure java runtime 실행 
+     3. jdk11을 다운로드 한다.
+     4. 다운로드한 압축파일을 해제 한 후 dev-tool (참고용)  폴더 아래로 이동 시킨다.         
+     * 참고사이트 : https://allonsyit.tistory.com/10
+    ```
 
 - JDK 설치
     - Java version 확인 (참고용)
     ```
-        $ java -version
-            openjdk version "11.0.11" 2021-04-20
-            OpenJDK Runtime Environment (build 11.0.11+9-Ubuntu-0ubuntu2.20.04)
-            OpenJDK 64-Bit Server VM (build 11.0.11+9-Ubuntu-0ubuntu2.20.04, mixed mode, sharing)            
+      $ java -version
+        openjdk version "11.0.11" 2021-04-20
+        OpenJDK Runtime Environment (build 11.0.11+9-Ubuntu-0ubuntu2.20.04)
+        OpenJDK 64-Bit Server VM (build 11.0.11+9-Ubuntu-0ubuntu2.20.04, mixed mode, sharing)            
     ```
 
     
     - 환경변수 설정 (참고용)
     ```
-        $ vim ~/.bashrc
-            # 편집 및 추가
-            export JAVA_HOME=/home/kafka/Dev-tool/jdk-11.0.11+9
-            export PATH=$PATH:$JAVA_HOME/bin  
+    $ vim ~/.bashrc
+      # 편집 및 추가
+        export JAVA_HOME=/home/kafka/Dev-tool/jdk-11.0.11+9
+        export PATH=$PATH:$JAVA_HOME/bin  
        
-        $ source ~/.bashrc       
-        $ echo $JAVA_HOME
+    $ source ~/.bashrc       
+    $ echo $JAVA_HOME
     ```
 
 - MAVEN 설치
@@ -100,58 +100,71 @@
    
 - GIT 설치
    ```
-    패키지 리스트 업데이트
-    $ sudo apt-get install git
+   패키지 리스트 업데이트
+   $ sudo apt-get install git
     
-    git 설치.
-    $ sudo apt install git
+   git 설치.
+   $ sudo apt install git
     
-    git의 버전 확인
-    $ git --version
-      git version 2.25.1
-    push했을때 올라갈 내 정보를 입력해줍니다.
-    $ git config --global user.name [이름]
-    $ git config --global user.mail [메일 주소]
+   git의 버전 확인
+   $ git --version
+     git version 2.25.1
+   push했을때 올라갈 내 정보를 입력해줍니다.
+   $ git config --global user.name [이름]
+   $ git config --global user.mail [메일 주소]
    ```
 
 - VSCODE Extension pack 설치
    ```
-    Java Extension Pack
-    Maven for java
-    Spring Boot Tools
-    Spring Boot Extension Pack
-    Spring Boot Dashboard
-    Docker
-    Kubernetes
-    Kafka    
+   Java Extension Pack
+   Maven for java
+   Spring Boot Tools
+   Spring Boot Extension Pack
+   Spring Boot Dashboard
+   Docker
+   Kubernetes
+   Kafka    
    ```
 
 #  
 
 - 소스코드 다운로드
-    ```
-        git clone https://git-codecommit.ap-northeast-2.amazonaws.com/v1/repos/eco_project
-    ```
+  ```
+    git clone https://git-codecommit.ap-northeast-2.amazonaws.com/v1/repos/eco_project
+  ```
 
 - 소스코드 폴더 구조
-    ```
+  ```
         
-    ```
-- 빌드 및 실행
-    ```
-	git init
-	git add .
-	git commit -m "first commit"
-	git branch -M main
-	git remote add origin https://git-codecommit.ap-northeast-2.amazonaws.com/v1/repos/eco_project
-	git push -u origin main    
-   
+  ```
+- 소스코드 커밋
+  eco_project 루트폴더 에서 실행함.  
+  1. 최초 실행시
+  ```
+  git init
+  git add .
+  git commit -m "first commit"
+  git branch -M main
+  git remote add origin https://git-codecommit.ap-northeast-2.amazonaws.com/v1/repos/eco_project
+  git push -u origin main
+  ```
+  2.소스코드 변경작업 후
+  ```
+  git add .
+  git commit -m "commit"
+  git push -u origin main
+  
+  ```
+  
+- 전체빌드 및 마이크로 서비스 실행
+  eco_project 루트폴더 에서 실행함.
+  ```
    mvn clean package
    docker system prune -a
    docker-compose down && docker-compose build --no-cache && docker-compose up
-    ```
+  ```
 - eco-egy-gateway 
-    ```
+  ```
         
     ``` 
 - eco-egy-auth
