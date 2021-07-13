@@ -36,6 +36,10 @@
       * https://code.visualstudio.com/download
     - VSCODE내 JDK 다운로드 및 extension pack 설치(참고용)
       * https://allonsyit.tistory.com/10
+      ```
+         vscode 실행후 ctrl + shift + p  클릭 후  configure java runtime 실행 후 jdk11을 다운로드 한다.
+         다운로드한 압축파일을 해제 한 후 dev-tool (참고용)  폴더 아래로 이동 시킨다.
+      ```
 
 - JDK 설치
     - Java version 확인 (참고용)
