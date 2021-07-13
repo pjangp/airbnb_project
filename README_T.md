@@ -4,6 +4,7 @@
     * JDK 설치
     * MAVEN 설치
     * DOCKER 설치
+    * docker-compose 설치
     * GIT 설치
     * VSCODE Extension pack 설치
     * AWS Config
