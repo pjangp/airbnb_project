@@ -6,20 +6,27 @@
     * DOCKER 설치
     * GIT 설치
     * VSCODE Extension pack 설치
+    * AWS Config
 
 
 * 주로 사용하는 명령어 모음
 
-* 프로그램 소스코드 
-    * 다운로드
-    * 폴더 구조
-    * 빌드 및 실행sdsddsf---
+* 개발 
+    * 소스코드 다운로드
+    * 소소코드 폴더 구조
+    * 빌드 및 실행
     * eco-egy-gateway 
     * eco-egy-auth
     * eco-egy-admin
     * eco-egy-general
 
+* 운영
+    * AWS CodeCommit
+    * AWS ECR
+    * AWS CodeBuild
+    * AWS EKS
 
+    
 ---  
 
 
@@ -98,9 +105,54 @@
     Kafka    
     ```
 
-# 프로그램 소스코드 
+#  
 
 - 소스코드 다운로드
     ```
         git clone https://git-codecommit.ap-northeast-2.amazonaws.com/v1/repos/eco_project
     ```
+
+- 소스코드 폴더 구조
+    ```
+        
+    ```
+- 빌드 및 실행
+    ```
+        
+    ```
+- eco-egy-gateway 
+    ```
+        
+    ``` 
+- eco-egy-auth
+    ```
+        
+    ```
+- eco-egy-admin
+    ```
+        
+    ```
+- eco-egy-general
+    ```
+        
+    ```
+
+
+# 운영
+- AWS CodeCommit
+    ```
+        
+    ```
+- AWS ECR
+    ```
+        
+    ``` 
+- AWS CodeBuild
+    ```
+        
+    ``` 
+- AWS EKS
+    ```
+        
+    ```
+    
