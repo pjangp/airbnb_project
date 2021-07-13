@@ -12,6 +12,7 @@
 
 * 주로 사용하는 명령어 모음
 
+
 * 개발 
     * 소스코드 다운로드
     * 소소코드 폴더 구조
@@ -210,22 +211,25 @@
   
   1.최초 실행시
   ```
-  git init
-  git add .
-  git commit -m "first commit"
-  git branch -M main
-  git remote add origin https://git-codecommit.ap-northeast-2.amazonaws.com/v1/repos/eco_project
-  git push -u origin main
+  $ git init
+  $ git add .
+  $ git commit -m "first commit"
+  $ git branch -M main
+  $ git remote add origin https://git-codecommit.ap-northeast-2.amazonaws.com/v1/repos/eco_project
+  $ git push -u origin main
   ```
   
   2.소스코드 변경작업 후
   ```
-  git add .
-  git commit -m "commit"
-  git push -u origin main
+  $ git add .
+  $ git commit -m "commit"
+  $ git push -u origin main
   
   ```
-  
+  ```
+  git 서브모듈 삭제
+   $ git rm --cached <path-to-submodule>
+  ```
 - 전체빌드 및 마이크로 서비스 실행
   eco_project 루트폴더 에서 실행함.
   ```
