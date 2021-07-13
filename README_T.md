@@ -42,7 +42,7 @@
          2. ctrl + shift + p  클릭 후  configure java runtime 실행 
          3. jdk11을 다운로드 한다.
          4. 다운로드한 압축파일을 해제 한 후 dev-tool (참고용)  폴더 아래로 이동 시킨다.         
-         * https://allonsyit.tistory.com/10  - 참고 사이트
+         * 참고사이트 : https://allonsyit.tistory.com/10
       ```
 
 - JDK 설치
@@ -62,47 +62,60 @@
             export JAVA_HOME=/home/kafka/Dev-tool/jdk-11.0.11+9
             export PATH=$PATH:$JAVA_HOME/bin  
        
-        $ source ~/.bashrc
-       
+        $ source ~/.bashrc       
         $ echo $JAVA_HOME
     ```
 
 - MAVEN 설치
     ```
-      sudo apt install maven
-      mvn -v
-      apt list maven    
+    $ sudo apt install maven
+    $ mvn -v
+    	Apache Maven 3.6.3
+	Maven home: /usr/share/maven
+	Java version: 11.0.11, vendor: AdoptOpenJDK, runtime: /home/kafka/Dev-tool/jdk-11.0.11+9
+	Default locale: en_US, platform encoding: UTF-8
+	OS name: "linux", version: "5.8.0-59-generic", arch: "amd64", family: "unix"
+    $ apt list maven    
     ```
 
 - DOCKER 설치
     * https://kangwoo.kr/2020/07/25/%EC%9A%B0%EB%B6%84%ED%88%AC%EC%97%90-docker-%EC%84%A4%EC%B9%98%ED%95%98%EA%B8%B0/
     
     ```  
-    sudo usermod -aG docker <your-username>
+    $ sudo usermod -aG docker <your-username>
     or
-    sudo chown root:docker /var/run/docker.sock 
+    $ sudo chown root:docker /var/run/docker.sock 
     or
-    sudo chmod 666 /var/run/docker.sock
+    $ sudo chmod 666 /var/run/docker.sock
     ```
-
+- docker-compose 설치
+   ```
+   $ sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+   $ sudo chmod +x /usr/local/bin/docker-compose
+   $ sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+   $ docker-compose --version
+     docker-compose version 1.29.2, build unknown
+   * 참고사이트 : https://docs.docker.com/compose/install/
+   ```
+   
 - GIT 설치
-    ```
-    명령어를 입력하여 패키지 리스트를 업데이트합니다.
-    sudo apt-get install git
+   ```
+    패키지 리스트 업데이트
+    $ sudo apt-get install git
     
-    명령어를 입력하여 깃을 설치합니다.
-    sudo apt install git
+    git 설치.
+    $ sudo apt install git
     
-    git의 버전을 알 수 있습니다
-    git --version
-    
+    git의 버전 확인
+    $ git --version
+      git version 2.25.1
     push했을때 올라갈 내 정보를 입력해줍니다.
-    git config --global user.name [이름]
-    git config --global user.mail [메일 주소]
-    ```
+    $ git config --global user.name [이름]
+    $ git config --global user.mail [메일 주소]
+   ```
 
 - VSCODE Extension pack 설치
-    ```
+   ```
     Java Extension Pack
     Maven for java
     Spring Boot Tools
@@ -111,7 +124,7 @@
     Docker
     Kubernetes
     Kafka    
-    ```
+   ```
 
 #  
 
