@@ -125,7 +125,16 @@
     ```
 - 빌드 및 실행
     ```
-        
+	git init
+	git add .
+	git commit -m "first commit"
+	git branch -M main
+	git remote add origin https://git-codecommit.ap-northeast-2.amazonaws.com/v1/repos/eco_project
+	git push -u origin main    
+   
+   mvn clean package
+   docker system prune -a
+   docker-compose down && docker-compose build --no-cache && docker-compose up
     ```
 - eco-egy-gateway 
     ```
