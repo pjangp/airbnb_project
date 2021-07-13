@@ -134,9 +134,77 @@
   ```
 
 - 소스코드 폴더 구조
+  
+  eco_project
+  1. eco-egy-lib
   ```
-        
+      com.skep.eco.common.config
+      com.skep.eco.common.exception
+      com.skep.eco.common.util
+      com.skep.eco.core.controller
+      com.skep.eco.core.dto
   ```
+  2. micro/eco-egy-gateway
+  ```
+  ```
+  3. micro/eco-egy-auth
+  ```   
+      kubernetes
+      src/main/java
+      	com.skep.eco.egy.auth.config
+      	com.skep.eco.egy.auth.controller
+      	com.skep.eco.egy.auth.handler
+      	com.skep.eco.egy.auth.interceptor
+      	com.skep.eco.egy.auth.persistence
+      	com.skep.eco.egy.auth.security
+      	com.skep.eco.egy.auth.service
+      src/resources
+        templates
+      	application.yml
+       target
+       buildspec.yaml
+       Dockerfile
+       pom.xml
+  ```
+  4. micro/eco-egy-admin
+  ```
+      kubernetes
+      src/main/java
+      	com.skep.eco.egy.admin.config
+      	com.skep.eco.egy.admin.controller
+      	com.skep.eco.egy.admin.handler
+      	com.skep.eco.egy.admin.interceptor
+      	com.skep.eco.egy.admin.persistence
+      	com.skep.eco.egy.admin.security
+      	com.skep.eco.egy.admin.service
+      src/resources
+         templates
+      	 application.yml
+       target
+       buildspec.yaml
+       Dockerfile
+       pom.xml
+  ```
+  5. micro/eco-egy-general       
+  ```
+      kubernetes
+      src/main/java
+      	com.skep.eco.egy.general.config
+      	com.skep.eco.egy.general.controller
+      	com.skep.eco.egy.general.handler
+      	com.skep.eco.egy.general.interceptor
+      	com.skep.eco.egy.general.persistence
+      	com.skep.eco.egy.general.security
+      	com.skep.eco.egy.general.service
+      src/resources
+         templates
+      	 application.yml
+       target
+       buildspec.yaml
+       Dockerfile
+       pom.xml
+  ```
+  
 - 소스코드 커밋
   eco_project 루트폴더 에서 실행함.  
   1. 최초 실행시
