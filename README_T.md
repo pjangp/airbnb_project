@@ -130,84 +130,85 @@
 
 - 소스코드 다운로드
   ```
-    git clone https://git-codecommit.ap-northeast-2.amazonaws.com/v1/repos/eco_project
+  git clone https://git-codecommit.ap-northeast-2.amazonaws.com/v1/repos/eco_project
   ```
 
 - 소스코드 폴더 구조
   
   eco_project
-  1. eco-egy-lib
+  1.eco-egy-lib
   ```
-      com.skep.eco.common.config
-      com.skep.eco.common.exception
-      com.skep.eco.common.util
-      com.skep.eco.core.controller
-      com.skep.eco.core.dto
+  com.skep.eco.common.config
+  com.skep.eco.common.exception
+  com.skep.eco.common.util
+  com.skep.eco.core.controller
+  com.skep.eco.core.dto
   ```
-  2. micro/eco-egy-gateway
+  2.micro/eco-egy-gateway
   ```
   ```
-  3. micro/eco-egy-auth
+  3.micro/eco-egy-auth
   ```   
-      kubernetes
-      src/main/java
-      	com.skep.eco.egy.auth.config
-      	com.skep.eco.egy.auth.controller
-      	com.skep.eco.egy.auth.handler
-      	com.skep.eco.egy.auth.interceptor
-      	com.skep.eco.egy.auth.persistence
-      	com.skep.eco.egy.auth.security
-      	com.skep.eco.egy.auth.service
-      src/resources
-        templates
-      	application.yml
-       target
-       buildspec.yaml
-       Dockerfile
-       pom.xml
+  kubernetes
+  src/main/java
+    com.skep.eco.egy.auth.config
+    com.skep.eco.egy.auth.controller
+    com.skep.eco.egy.auth.handler
+    com.skep.eco.egy.auth.interceptor
+    com.skep.eco.egy.auth.persistence
+    com.skep.eco.egy.auth.security
+    com.skep.eco.egy.auth.service
+  src/resources
+     templates
+     application.yml
+  target
+     buildspec.yaml
+     Dockerfile
+     pom.xml
   ```
-  4. micro/eco-egy-admin
+  4.micro/eco-egy-admin
   ```
-      kubernetes
-      src/main/java
-      	com.skep.eco.egy.admin.config
-      	com.skep.eco.egy.admin.controller
-      	com.skep.eco.egy.admin.handler
-      	com.skep.eco.egy.admin.interceptor
-      	com.skep.eco.egy.admin.persistence
-      	com.skep.eco.egy.admin.security
-      	com.skep.eco.egy.admin.service
-      src/resources
-         templates
-      	 application.yml
-       target
-       buildspec.yaml
-       Dockerfile
-       pom.xml
+  kubernetes
+  src/main/java
+    com.skep.eco.egy.admin.config
+    com.skep.eco.egy.admin.controller
+    com.skep.eco.egy.admin.handler
+    com.skep.eco.egy.admin.interceptor
+    com.skep.eco.egy.admin.persistence
+    com.skep.eco.egy.admin.security
+    com.skep.eco.egy.admin.service
+  src/resources
+     templates
+     application.yml
+  target
+  buildspec.yaml
+  Dockerfile
+  pom.xml
   ```
-  5. micro/eco-egy-general       
+  5.micro/eco-egy-general       
   ```
-      kubernetes
-      src/main/java
-      	com.skep.eco.egy.general.config
-      	com.skep.eco.egy.general.controller
-      	com.skep.eco.egy.general.handler
-      	com.skep.eco.egy.general.interceptor
-      	com.skep.eco.egy.general.persistence
-      	com.skep.eco.egy.general.security
-      	com.skep.eco.egy.general.service
-      src/resources
-         templates
-      	 application.yml
-       target
-       buildspec.yaml
-       Dockerfile
-       pom.xml
+  kubernetes
+  src/main/java
+    com.skep.eco.egy.general.config
+    com.skep.eco.egy.general.controller
+    com.skep.eco.egy.general.handler
+    com.skep.eco.egy.general.interceptor
+    com.skep.eco.egy.general.persistence
+    com.skep.eco.egy.general.security
+    com.skep.eco.egy.general.service
+   src/resources
+      templates
+      application.yml
+   target
+   buildspec.yaml
+   Dockerfile
+   pom.xml
   ```
   
 - 소스코드 커밋
-  eco_project 루트폴더 에서 실행함.  
-  1. 최초 실행시
+  eco_project 루트폴더 에서 실행함
+  
+  1.최초 실행시
   ```
   git init
   git add .
@@ -216,6 +217,7 @@
   git remote add origin https://git-codecommit.ap-northeast-2.amazonaws.com/v1/repos/eco_project
   git push -u origin main
   ```
+  
   2.소스코드 변경작업 후
   ```
   git add .
@@ -227,43 +229,43 @@
 - 전체빌드 및 마이크로 서비스 실행
   eco_project 루트폴더 에서 실행함.
   ```
-   mvn clean package
-   docker system prune -a
-   docker-compose down && docker-compose build --no-cache && docker-compose up
+  mvn clean package
+  docker system prune -a
+  docker-compose down && docker-compose build --no-cache && docker-compose up
   ```
 - eco-egy-gateway 
   ```
         
-    ``` 
+  ``` 
 - eco-egy-auth
-    ```
-        
-    ```
+  ```
+       
+  ```
 - eco-egy-admin
-    ```
+  ```
         
-    ```
+  ```
 - eco-egy-general
-    ```
+  ```
         
-    ```
+  ```
 
 
 # 운영
 - AWS CodeCommit
-    ```
+  ```
         
-    ```
+  ```
 - AWS ECR
-    ```
-        
-    ``` 
+  ```
+       
+  ``` 
 - AWS CodeBuild
-    ```
+  ```
         
-    ``` 
+  ``` 
 - AWS EKS
-    ```
+  ```
         
-    ```
+  ```
     
