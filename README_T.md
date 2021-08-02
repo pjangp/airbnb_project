@@ -137,7 +137,7 @@
 - 소스코드 폴더 구조
   eco_project
   
-  1.eco-egy-lib
+  1.eco-egy-lib  (Common Library / controller / dto / utils)
   ```
   com.skep.eco.common.config
   com.skep.eco.common.exception
