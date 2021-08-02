@@ -147,14 +147,15 @@
   ```
   2.micro/eco-egy-gateway
   ```
+  application.yml
   ```
-  3.micro/eco-egy-auth
+  3.micro/eco-egy-auth  (공통 Login / Session 관리)
   ```   
   kubernetes
   src/main/java
-    com.skep.eco.egy.auth.config
-    com.skep.eco.egy.auth.controller
-    com.skep.eco.egy.auth.handler
+    com.skep.eco.egy.auth.config      
+    com.skep.eco.egy.auth.controller  
+    com.skep.eco.egy.auth.handler    
     com.skep.eco.egy.auth.interceptor
     com.skep.eco.egy.auth.persistence
     com.skep.eco.egy.auth.security
@@ -167,7 +168,26 @@
      Dockerfile
      pom.xml
   ```
-  4.micro/eco-egy-admin
+  4.micro/eco-console  (시스템 관리-시스템관리자)
+  ```
+  kubernetes
+  src/main/java
+    com.skep.eco.console.config
+    com.skep.eco.console.controller
+    com.skep.eco.console.handler
+    com.skep.eco.console.interceptor
+    com.skep.eco.console.persistence
+    com.skep.eco.console.security
+    com.skep.eco.console.service
+  src/resources
+     templates
+     application.yml
+  target
+  buildspec.yaml
+  Dockerfile
+  pom.xml
+  ```
+  5.micro/eco-egy-admin (소각장-내부사용자)
   ```
   kubernetes
   src/main/java
@@ -186,7 +206,7 @@
   Dockerfile
   pom.xml
   ```
-  5.micro/eco-egy-general       
+  6.micro/eco-egy-general (소각장-외부사용자)       
   ```
   kubernetes
   src/main/java
@@ -205,7 +225,34 @@
    Dockerfile
    pom.xml
   ```
-  
+ 
+  7.micro/eco-stp-admin (수질검사-내부사용자)      
+  ```
+  kubernetes
+  src/main/java
+    com.skep.eco.egy.general.config
+    com.skep.eco.egy.general.controller
+    com.skep.eco.egy.general.handler
+    com.skep.eco.egy.general.interceptor
+    com.skep.eco.egy.general.persistence
+    com.skep.eco.egy.general.security
+    com.skep.eco.egy.general.service
+   src/resources
+      templates
+      application.yml
+   target
+   buildspec.yaml
+   Dockerfile
+   pom.xml
+  ```
+ 
+  9.micro/eco-egy-nginx (common javascript/ css / error page / image )     
+  ```
+  html
+  nginx.conf
+  ``` 
+ 
+ 
 - 소스코드 커밋
   eco_project 루트폴더 에서 실행함
   
@@ -221,13 +268,17 @@
   
   2.소스코드 변경작업 후
   ```
+  git 저장소에 저장하기
   $ git add .
   $ git commit -m "commit"
   $ git push -u origin main
   
+  git 저장소로부터 업데이트 받기 #1
+  $ git pull origin main
+  
   ```
   ```
-  git 서브모듈 삭제
+  * [참고] git 서브모듈 삭제 방법
    $ git rm --cached <path-to-submodule>
   ```
 - 전체빌드 및 마이크로 서비스 실행
