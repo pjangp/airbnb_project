@@ -134,6 +134,9 @@
 
 - 소스코드 다운로드
   ```
+  cd ~
+  mkdir Project
+  cd Project
   git clone https://git-codecommit.ap-northeast-2.amazonaws.com/v1/repos/eco_project
   ```
 
