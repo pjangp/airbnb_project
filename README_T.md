@@ -236,13 +236,13 @@
   ```
   kubernetes
   src/main/java
-    com.skep.eco.egy.general.config
-    com.skep.eco.egy.general.controller
-    com.skep.eco.egy.general.handler
-    com.skep.eco.egy.general.interceptor
-    com.skep.eco.egy.general.persistence
-    com.skep.eco.egy.general.security
-    com.skep.eco.egy.general.service
+    com.skep.eco.stp.admin.config
+    com.skep.eco.stp.admin.controller
+    com.skep.eco.stp.admin.handler
+    com.skep.eco.stp.admin.interceptor
+    com.skep.eco.stp.admin.persistence
+    com.skep.eco.stp.admin.security
+    com.skep.eco.stp.admin.service
    src/resources
       templates
       application.yml
