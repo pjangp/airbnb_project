@@ -17,10 +17,13 @@
     * 소스코드 다운로드
     * 소소코드 폴더 구조
     * 빌드 및 실행
+    * eco-egy-lib
+    * eco-console
     * eco-egy-gateway 
     * eco-egy-auth
     * eco-egy-admin
     * eco-egy-general
+    * eco-stp-admin
 
 * 운영
     * AWS CodeCommit
