@@ -128,6 +128,7 @@
    Docker
    Kubernetes
    Kafka    
+   Lombok Annotations Support for VS Code
    ```
 
 #  
